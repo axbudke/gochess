@@ -46,32 +46,31 @@ func (b *Board) parse(fenStr FEN) error {
 	if submatches == nil {
 		return fmt.Errorf("failed to parse regexp")
 	}
-	fmt.Printf("FEN submatches: %#v\n", submatches)
+	// fmt.Printf("FEN submatches: %#v\n", submatches)
 
 	// Parse PieceList from fenPiecePlacementStr
 	b.piecesStr = submatches[1]
 	b.pieceList = make(PieceList, 64)
 	index := 0
-	for _, c := range []byte(submatches[1]) {
-		// Parse Piece from string
-		if c == '/' {
-			// This char is just a row divider, means nothing in this parsing
-			continue
-		} else if regexp.MustCompile("[1-8]").Match([]byte{c}) {
-			val, _ := strconv.Atoi(string(c))
-			index += val
-		} else if regexp.MustCompile("[pnbrqkPNBRQK]").Match([]byte{c}) {
-			v, err := PieceChar(c).Val()
-			if err != nil {
-				return err
+	pieceRows := strings.Split(submatches[1], "/")
+	for i := len(pieceRows) - 1; i >= 0; i-- {
+		for _, c := range []byte(pieceRows[i]) {
+			if regexp.MustCompile("[1-8]").Match([]byte{c}) {
+				val, _ := strconv.Atoi(string(c))
+				index += val
+			} else if regexp.MustCompile("[pnbrqkPNBRQK]").Match([]byte{c}) {
+				v, err := PieceChar(c).Val()
+				if err != nil {
+					return err
+				}
+				b.pieceList[index] = v
+				index++
+			} else {
+				return fmt.Errorf("invalid piece syntax")
 			}
-			b.pieceList[index] = v
-			index++
-		} else {
-			return fmt.Errorf("invalid piece syntax")
 		}
 	}
-	fmt.Printf("PiecePlacement.pieceList: %#v\n", b.pieceList)
+	// fmt.Printf("PiecePlacement.pieceList: %#v\n", b.pieceList)
 
 	// Parse Active Color
 	b.whitesTurn = submatches[2] == "w"

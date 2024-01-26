@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFEN(t *testing.T) {
+func TestBoard(t *testing.T) {
 	startingBoard, err := board.New(board.StartingFEN)
 	require.NoError(t, err)
 
@@ -19,4 +19,10 @@ func TestFEN(t *testing.T) {
 	assert.Equal(t, true, startingBoard.CanCastle(true, true))
 	assert.Equal(t, 0, startingBoard.HalfmoveCount())
 	assert.Equal(t, 1, startingBoard.FullmoveCount())
+}
+
+func BenchmarkBoard(b *testing.B) {
+	b.Run("Just New", func(b *testing.B) {
+		_, _ = board.New(board.StartingFEN)
+	})
 }

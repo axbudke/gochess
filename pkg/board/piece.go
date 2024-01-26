@@ -1,6 +1,16 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
+
+var PromotionPieceVals = []PieceVal{
+	PieceVal_WhiteQueen,
+	PieceVal_WhiteRook,
+	PieceVal_WhiteBishop,
+	PieceVal_WhiteKnight,
+}
 
 type PieceList []PieceVal
 
@@ -26,6 +36,22 @@ const (
 	PieceVal_BlackQueen  PieceVal = -5
 	PieceVal_BlackKing   PieceVal = -6
 )
+
+func (v PieceVal) String() string {
+	c, err := v.Char()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprint(c)
+}
+
+func (v PieceVal) PieceSymbol() string {
+	c, err := PieceVal(int(math.Abs(float64(v)))).Char()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprint(c)
+}
 
 func (v PieceVal) Char() (PieceChar, error) {
 	switch v {
@@ -62,19 +88,23 @@ type PieceChar byte
 
 // pieceChar enums
 const (
-	PieceChar_WhitePawn   PieceChar = 'p'
-	PieceChar_WhiteKnight PieceChar = 'n'
-	PieceChar_WhiteBishop PieceChar = 'b'
-	PieceChar_WhiteRook   PieceChar = 'r'
-	PieceChar_WhiteQueen  PieceChar = 'q'
-	PieceChar_WhiteKing   PieceChar = 'k'
-	PieceChar_BlackPawn   PieceChar = 'P'
-	PieceChar_BlackKnight PieceChar = 'N'
-	PieceChar_BlackBishop PieceChar = 'B'
-	PieceChar_BlackRook   PieceChar = 'R'
-	PieceChar_BlackQueen  PieceChar = 'Q'
-	PieceChar_BlackKing   PieceChar = 'K'
+	PieceChar_WhitePawn   PieceChar = 'P'
+	PieceChar_WhiteKnight PieceChar = 'N'
+	PieceChar_WhiteBishop PieceChar = 'B'
+	PieceChar_WhiteRook   PieceChar = 'R'
+	PieceChar_WhiteQueen  PieceChar = 'Q'
+	PieceChar_WhiteKing   PieceChar = 'K'
+	PieceChar_BlackPawn   PieceChar = 'p'
+	PieceChar_BlackKnight PieceChar = 'n'
+	PieceChar_BlackBishop PieceChar = 'b'
+	PieceChar_BlackRook   PieceChar = 'r'
+	PieceChar_BlackQueen  PieceChar = 'q'
+	PieceChar_BlackKing   PieceChar = 'k'
 )
+
+func (c PieceChar) String() string {
+	return string([]byte{byte(c)})
+}
 
 func (c PieceChar) Val() (PieceVal, error) {
 	switch c {
@@ -103,6 +133,6 @@ func (c PieceChar) Val() (PieceVal, error) {
 	case PieceChar_BlackKing:
 		return PieceVal_BlackKing, nil
 	default:
-		return PieceVal(0), fmt.Errorf("invalid char")
+		return PieceVal_Empty, fmt.Errorf("invalid char")
 	}
 }

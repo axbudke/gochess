@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerateMoves(t *testing.T) {
+func TestGenerateSudoLegalMoves(t *testing.T) {
 	startingBoard, err := board.New(board.StartingFEN)
 	require.NoError(t, err)
 
-	moves := generation.GenerateMoves(startingBoard)
-	fmt.Printf("Moves: %+v\n", moves)
+	moves := generation.GenerateSudoLegalMoves(startingBoard)
+	fmt.Printf("Moves: %s\n", moves)
+}
+
+func BenchmarkGenerateSudoLegalMoves(b *testing.B) {
+
 }
