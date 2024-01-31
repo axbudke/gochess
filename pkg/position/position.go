@@ -1,4 +1,4 @@
-package board
+package position
 
 import (
 	"fmt"
@@ -14,11 +14,13 @@ type BoardInterface interface {
 	EnPassantSquare() string
 	HalfmoveCount() int
 	FullmoveCount() int
+
+	String() string
 }
 
-func New(fenStr FEN) (*Board, error) {
+func New(fenStr FEN) (BoardInterface, error) {
 	b := &Board{}
-	err := b.parse(fenStr)
+	err := b.parseFEN(fenStr)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +28,6 @@ func New(fenStr FEN) (*Board, error) {
 }
 
 type Board struct {
-	piecesStr  string
 	pieceList  PieceList
 	whitesTurn bool
 	castling   struct {
@@ -40,16 +41,36 @@ type Board struct {
 	fullmoveCount   int
 }
 
-func (b *Board) parse(fenStr FEN) error {
+func (b Board) PieceList() PieceList    { return b.pieceList }
+func (b Board) IsWhitesTurn() bool      { return b.whitesTurn }
+func (b Board) EnPassantSquare() string { return b.enPassantSquare }
+func (b Board) HalfmoveCount() int      { return b.halfmoveCount }
+func (b Board) FullmoveCount() int      { return b.fullmoveCount }
+func (b Board) CanCastle(isWhite, isShort bool) bool {
+	if isWhite && isShort {
+		return b.castling.whiteShort
+	} else if isWhite && !isShort {
+		return b.castling.whiteLong
+	} else if !isWhite && isShort {
+		return b.castling.blackShort
+	} else if !isWhite && !isShort {
+		return b.castling.blackLong
+	}
+	return false
+}
+
+func (b Board) String() string {
+	return string(b.FEN())
+}
+
+func (b *Board) parseFEN(fenStr FEN) error {
 	// Parse FEN with regexp
-	submatches := fullRegExp.FindStringSubmatch(string(fenStr))
+	submatches := fenRegExp.FindStringSubmatch(string(fenStr))
 	if submatches == nil {
 		return fmt.Errorf("failed to parse regexp")
 	}
-	// fmt.Printf("FEN submatches: %#v\n", submatches)
 
 	// Parse PieceList from fenPiecePlacementStr
-	b.piecesStr = submatches[1]
 	b.pieceList = make(PieceList, 64)
 	index := 0
 	pieceRows := strings.Split(submatches[1], "/")
@@ -70,7 +91,6 @@ func (b *Board) parse(fenStr FEN) error {
 			}
 		}
 	}
-	// fmt.Printf("PiecePlacement.pieceList: %#v\n", b.pieceList)
 
 	// Parse Active Color
 	b.whitesTurn = submatches[2] == "w"
@@ -92,7 +112,7 @@ func (b *Board) parse(fenStr FEN) error {
 	b.halfmoveCount = halfmoveCount
 
 	// Parse Fullmove Count
-	fullmoveCount, err := strconv.Atoi(submatches[5])
+	fullmoveCount, err := strconv.Atoi(submatches[6])
 	if err != nil {
 		return err
 	}
@@ -101,20 +121,32 @@ func (b *Board) parse(fenStr FEN) error {
 	return nil
 }
 
-func (b Board) PieceList() PieceList    { return b.pieceList }
-func (b Board) IsWhitesTurn() bool      { return b.whitesTurn }
-func (b Board) EnPassantSquare() string { return b.enPassantSquare }
-func (b Board) HalfmoveCount() int      { return b.halfmoveCount }
-func (b Board) FullmoveCount() int      { return b.fullmoveCount }
-func (b Board) CanCastle(isWhite, isShort bool) bool {
-	if isWhite && isShort {
-		return b.castling.whiteShort
-	} else if isWhite && !isShort {
-		return b.castling.whiteLong
-	} else if !isWhite && isShort {
-		return b.castling.blackShort
-	} else if !isWhite && !isShort {
-		return b.castling.blackLong
+func (b Board) FEN() FEN {
+	piecePlacementStr := ""
+	pieceRows := []string{}
+	emptyCount := 0
+	for r := 0; r < 8; r++ {
+		pieceRow := ""
+		for f := 0; f < 8; f++ {
+			pieceVal := b.pieceList[r*8+f]
+			if pieceVal == PieceVal_Empty {
+				emptyCount++
+				continue
+			}
+			if emptyCount != 0 {
+				pieceRow += fmt.Sprint(emptyCount)
+				emptyCount = 0
+			}
+			pieceRow += fmt.Sprint(pieceVal.String())
+		}
+		pieceRows = append(pieceRows, pieceRow)
 	}
-	return false
+	for i := len(pieceRows) - 1; i >= 0; i-- {
+		piecePlacementStr += pieceRows[i]
+	}
+	fmt.Printf("%s", piecePlacementStr)
+
+	fenStr := ""
+
+	return FEN(fenStr)
 }

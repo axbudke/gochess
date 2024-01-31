@@ -1,7 +1,7 @@
 package generation
 
-import "gochess/pkg/board"
+import "gochess/pkg/position"
 
-func MakeMove(b board.BoardInterface, move Move) board.BoardInterface {
+func MakeMove(b position.BoardInterface, move Move) position.BoardInterface {
 	return b
 }

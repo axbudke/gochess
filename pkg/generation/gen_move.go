@@ -1,10 +1,10 @@
 package generation
 
 import (
-	"gochess/pkg/board"
+	"gochess/pkg/position"
 )
 
-func GenerateMoves(b board.BoardInterface) MoveList {
+func GenerateMoves(b position.BoardInterface) MoveList {
 
 	// Generate sudo-legal moves
 	moves := GenerateSudoLegalMoves(b)
@@ -15,39 +15,39 @@ func GenerateMoves(b board.BoardInterface) MoveList {
 	return moves
 }
 
-func GenerateSudoLegalMoves(b board.BoardInterface) MoveList {
+func GenerateSudoLegalMoves(b position.BoardInterface) MoveList {
 	moves := MoveList{}
 
 	for i, pieceVal := range b.PieceList() {
-		fromSquare := board.Square(i)
+		fromSquare := position.Square(i)
 		if b.IsWhitesTurn() {
 			switch pieceVal {
-			case board.PieceVal_WhitePawn:
+			case position.PieceVal_WhitePawn:
 				moves = append(moves, GeneratePawnMoves(b, fromSquare)...)
-			case board.PieceVal_WhiteKnight:
+			case position.PieceVal_WhiteKnight:
 				moves = append(moves, GenerateKnightMoves(b, fromSquare)...)
-			case board.PieceVal_WhiteBishop:
+			case position.PieceVal_WhiteBishop:
 				moves = append(moves, GenerateBishopMoves(b, fromSquare)...)
-			case board.PieceVal_WhiteRook:
+			case position.PieceVal_WhiteRook:
 				moves = append(moves, GenerateRookMoves(b, fromSquare)...)
-			case board.PieceVal_WhiteQueen:
+			case position.PieceVal_WhiteQueen:
 				moves = append(moves, GenerateQueenMoves(b, fromSquare)...)
-			case board.PieceVal_WhiteKing:
+			case position.PieceVal_WhiteKing:
 				moves = append(moves, GenerateKingMoves(b, fromSquare)...)
 			}
 		} else {
 			switch pieceVal {
-			case board.PieceVal_BlackPawn:
+			case position.PieceVal_BlackPawn:
 				moves = append(moves, GeneratePawnMoves(b, fromSquare)...)
-			case board.PieceVal_BlackKnight:
+			case position.PieceVal_BlackKnight:
 				moves = append(moves, GenerateKnightMoves(b, fromSquare)...)
-			case board.PieceVal_BlackBishop:
+			case position.PieceVal_BlackBishop:
 				moves = append(moves, GenerateBishopMoves(b, fromSquare)...)
-			case board.PieceVal_BlackRook:
+			case position.PieceVal_BlackRook:
 				moves = append(moves, GenerateRookMoves(b, fromSquare)...)
-			case board.PieceVal_BlackQueen:
+			case position.PieceVal_BlackQueen:
 				moves = append(moves, GenerateQueenMoves(b, fromSquare)...)
-			case board.PieceVal_BlackKing:
+			case position.PieceVal_BlackKing:
 				moves = append(moves, GenerateKingMoves(b, fromSquare)...)
 			}
 		}
@@ -56,7 +56,7 @@ func GenerateSudoLegalMoves(b board.BoardInterface) MoveList {
 	return moves
 }
 
-func GeneratePawnMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
+func GeneratePawnMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
 	moves := MoveList{}
 
 	inverter := 1
@@ -68,19 +68,19 @@ func GeneratePawnMoves(b board.BoardInterface, fromSquare board.Square) MoveList
 
 	// Check pawn movements
 	forwardMovements := []int{1}
-	if r == board.Rank2 {
+	if r == position.Rank2 {
 		forwardMovements = append(forwardMovements, 2)
 	}
 	for _, rp := range forwardMovements {
-		move, err := GenerateMove(b, fromSquare, r+board.Rank(rp*inverter), f)
+		move, err := GenerateMove(b, fromSquare, r+position.Rank(rp*inverter), f)
 		if err != nil || move == nil {
 			break
 		}
 		if !move.IsCapture {
 			// Check for promotion
 			_, r := move.To.FileRank()
-			if (r == 8 && move.Piece == board.PieceVal_WhitePawn) ||
-				(r == 1 && move.Piece == board.PieceVal_BlackPawn) {
+			if (r == 8 && move.Piece == position.PieceVal_WhitePawn) ||
+				(r == 1 && move.Piece == position.PieceVal_BlackPawn) {
 				GeneratePromotionMoves(b, move)
 			} else {
 				moves = append(moves, move)
@@ -90,15 +90,15 @@ func GeneratePawnMoves(b board.BoardInterface, fromSquare board.Square) MoveList
 
 	// Check pawn captures
 	for _, fp := range []int{1, -1} {
-		move, err := GenerateMove(b, fromSquare, r+board.Rank(1*inverter), f+board.File(fp*inverter))
+		move, err := GenerateMove(b, fromSquare, r+position.Rank(1*inverter), f+position.File(fp*inverter))
 		if err != nil || move == nil {
 			continue
 		}
 		if move.IsCapture {
 			// Check for promotion
 			_, r := move.To.FileRank()
-			if (r == 8 && move.Piece == board.PieceVal_WhitePawn) ||
-				(r == 1 && move.Piece == board.PieceVal_BlackPawn) {
+			if (r == 8 && move.Piece == position.PieceVal_WhitePawn) ||
+				(r == 1 && move.Piece == position.PieceVal_BlackPawn) {
 				GeneratePromotionMoves(b, move)
 			} else {
 				moves = append(moves, move)
@@ -109,7 +109,7 @@ func GeneratePawnMoves(b board.BoardInterface, fromSquare board.Square) MoveList
 	return moves
 }
 
-func GeneratePromotionMoves(b board.BoardInterface, move *Move) MoveList {
+func GeneratePromotionMoves(b position.BoardInterface, move *Move) MoveList {
 	moves := MoveList{}
 
 	inverter := 1
@@ -117,13 +117,13 @@ func GeneratePromotionMoves(b board.BoardInterface, move *Move) MoveList {
 		inverter = -1
 	}
 
-	for _, promotionPiece := range board.PromotionPieceVals {
+	for _, promotionPiece := range position.PromotionPieceVals {
 		promotionMove := &Move{
 			BoardI:     b,
 			From:       move.From,
 			To:         move.To,
 			Piece:      move.Piece,
-			PromotedTo: promotionPiece * board.PieceVal(inverter),
+			PromotedTo: promotionPiece * position.PieceVal(inverter),
 		}
 		moves = append(moves, promotionMove)
 	}
@@ -131,52 +131,52 @@ func GeneratePromotionMoves(b board.BoardInterface, move *Move) MoveList {
 	return moves
 }
 
-func GenerateKnightMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
-	return GenerateNoSlideMoves(b, fromSquare, knightPairs)
+func GenerateKnightMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
+	return GenerateNoSlideMoves(b, fromSquare, KnightMovementPairs)
 }
 
-func GenerateKingMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
-	return GenerateNoSlideMoves(b, fromSquare, kingPairs)
+func GenerateKingMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
+	return GenerateNoSlideMoves(b, fromSquare, KingMovementPairs)
 }
 
-func GenerateBishopMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
-	return GenerateSlideMoves(b, fromSquare, bishopPairs)
+func GenerateBishopMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
+	return GenerateSlideMoves(b, fromSquare, BishopMovementPairs)
 }
 
-func GenerateRookMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
-	return GenerateSlideMoves(b, fromSquare, rookPairs)
+func GenerateRookMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
+	return GenerateSlideMoves(b, fromSquare, RookMovementPairs)
 }
 
-func GenerateQueenMoves(b board.BoardInterface, fromSquare board.Square) MoveList {
-	return GenerateSlideMoves(b, fromSquare, queenPairs)
+func GenerateQueenMoves(b position.BoardInterface, fromSquare position.Square) MoveList {
+	return GenerateSlideMoves(b, fromSquare, QueenMovementPairs)
 }
 
 var (
-	knightPairs = []movementPair{{1, 2}, {2, 1}, {1, -2}, {2, -1}, {-1, 2}, {-2, 1}, {-1, -2}, {-2, -1}}
-	bishopPairs = []movementPair{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
-	rookPairs   = []movementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
-	queenPairs  = []movementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
-	kingPairs   = []movementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
+	KnightMovementPairs = []MovementPair{{1, 2}, {2, 1}, {1, -2}, {2, -1}, {-1, 2}, {-2, 1}, {-1, -2}, {-2, -1}}
+	BishopMovementPairs = []MovementPair{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
+	RookMovementPairs   = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+	QueenMovementPairs  = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
+	KingMovementPairs   = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
 )
 
-type movementPair struct{ rp, fp int }
+type MovementPair struct{ RP, FP int }
 
-func GenerateNoSlideMoves(b board.BoardInterface, fromSquare board.Square, pairs []movementPair) MoveList {
+func GenerateNoSlideMoves(b position.BoardInterface, fromSquare position.Square, pairs []MovementPair) MoveList {
 	return GenerateMovementMoves(b, fromSquare, pairs, 1)
 }
 
-func GenerateSlideMoves(b board.BoardInterface, fromSquare board.Square, pairs []movementPair) MoveList {
+func GenerateSlideMoves(b position.BoardInterface, fromSquare position.Square, pairs []MovementPair) MoveList {
 	return GenerateMovementMoves(b, fromSquare, pairs, 7)
 }
 
-func GenerateMovementMoves(b board.BoardInterface, fromSquare board.Square, pairs []movementPair, slideCount int) MoveList {
+func GenerateMovementMoves(b position.BoardInterface, fromSquare position.Square, pairs []MovementPair, slideCount int) MoveList {
 	moves := MoveList{}
 
 	// Check movements
 	f, r := fromSquare.FileRank()
 	for _, pair := range pairs {
 		for i := 1; i <= slideCount; i++ {
-			move, err := GenerateMove(b, fromSquare, r+board.Rank(pair.rp*i), f+board.File(pair.fp*i))
+			move, err := GenerateMove(b, fromSquare, r+position.Rank(pair.RP*i), f+position.File(pair.FP*i))
 			if err != nil || move == nil {
 				break
 			}
@@ -190,7 +190,7 @@ func GenerateMovementMoves(b board.BoardInterface, fromSquare board.Square, pair
 	return moves
 }
 
-func GenerateMove(b board.BoardInterface, fromSquare board.Square, toR board.Rank, toF board.File) (move *Move, err error) {
+func GenerateMove(b position.BoardInterface, fromSquare position.Square, toR position.Rank, toF position.File) (move *Move, err error) {
 	pVal := b.PieceList().PieceAt(fromSquare)
 
 	// inverter used to determine same/opposite color
@@ -200,7 +200,7 @@ func GenerateMove(b board.BoardInterface, fromSquare board.Square, toR board.Ran
 	}
 
 	// Check square is valid
-	toSquare, err := board.NewSquare(toR, toF)
+	toSquare, err := position.NewSquare(toR, toF)
 	if err != nil {
 		return nil, err
 	}
@@ -220,10 +220,10 @@ func GenerateMove(b board.BoardInterface, fromSquare board.Square, toR board.Ran
 		// 	return move, nil
 		// }
 		return move, nil
-	} else if toSquarePieceVal*board.PieceVal(inverter) < 0 { // Opposite color piece
+	} else if toSquarePieceVal*position.PieceVal(inverter) < 0 { // Opposite color piece
 		move.IsCapture = true
 		return move, nil
-	} else if toSquarePieceVal*board.PieceVal(inverter) > 0 { // Same color piece
+	} else if toSquarePieceVal*position.PieceVal(inverter) > 0 { // Same color piece
 		return nil, nil
 	}
 

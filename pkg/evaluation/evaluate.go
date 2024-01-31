@@ -1,42 +1,42 @@
 package evaluation
 
 import (
-	"gochess/pkg/board"
+	"gochess/pkg/position"
 )
 
-func Evaluate(b board.BoardInterface) int {
+func Evaluate(b position.BoardInterface) int {
 	var total int
 	total += GetMaterialCount(b)
 	return total
 }
 
-func GetMaterialCount(b board.BoardInterface) int {
+func GetMaterialCount(b position.BoardInterface) int {
 	var total int
-	pieceList := board.PieceList{}
+	pieceList := position.PieceList{}
 	for _, pieceRow := range pieceList {
 		for _, pieceVal := range pieceRow {
 			switch pieceVal {
-			case board.PieceVal_BlackPawn:
+			case position.PieceVal_BlackPawn:
 				total += -1
-			case board.PieceVal_BlackBishop, board.PieceVal_BlackKnight:
+			case position.PieceVal_BlackBishop, position.PieceVal_BlackKnight:
 				total += -3
-			case board.PieceVal_BlackRook:
+			case position.PieceVal_BlackRook:
 				total += -5
-			case board.PieceVal_BlackQueen:
+			case position.PieceVal_BlackQueen:
 				total += -9
-			case board.PieceVal_BlackKing:
+			case position.PieceVal_BlackKing:
 				total += -200
-			case board.PieceVal_WhitePawn:
+			case position.PieceVal_WhitePawn:
 				total += 1
-			case board.PieceVal_WhiteBishop, board.PieceVal_WhiteKnight:
+			case position.PieceVal_WhiteBishop, position.PieceVal_WhiteKnight:
 				total += 3
-			case board.PieceVal_WhiteRook:
+			case position.PieceVal_WhiteRook:
 				total += 5
-			case board.PieceVal_WhiteQueen:
+			case position.PieceVal_WhiteQueen:
 				total += 9
-			case board.PieceVal_WhiteKing:
+			case position.PieceVal_WhiteKing:
 				total += 200
-			case board.PieceVal_Empty:
+			case position.PieceVal_Empty:
 			default:
 			}
 		}

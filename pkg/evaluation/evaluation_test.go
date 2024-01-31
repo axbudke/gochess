@@ -1,8 +1,8 @@
 package evaluation_test
 
 import (
-	"gochess/pkg/board"
 	"gochess/pkg/evaluation"
+	"gochess/pkg/position"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,9 +10,9 @@ import (
 )
 
 func TestEvaluate(t *testing.T) {
-	startingBoard, err := board.New(board.StartingFEN)
+	startingPosition, err := position.New(position.StartingFEN)
 	require.NoError(t, err)
 
-	assert.Equal(t, 0, evaluation.Evaluate(startingBoard))
-	assert.Equal(t, 0, evaluation.GetMaterialCount(startingBoard))
+	assert.Equal(t, 0, evaluation.Evaluate(startingPosition))
+	assert.Equal(t, 0, evaluation.GetMaterialCount(startingPosition))
 }
