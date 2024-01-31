@@ -4,13 +4,13 @@ import (
 	"gochess/pkg/position"
 )
 
-func Evaluate(b position.BoardInterface) int {
+func Evaluate(b *position.Position) int {
 	var total int
 	total += GetMaterialCount(b)
 	return total
 }
 
-func GetMaterialCount(b position.BoardInterface) int {
+func GetMaterialCount(b *position.Position) int {
 	var total int
 	pieceList := position.PieceList{}
 	for _, pieceRow := range pieceList {

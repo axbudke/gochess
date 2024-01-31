@@ -20,7 +20,7 @@ var (
 	fenRegExpStr = fmt.Sprintf("(%s) (%s) (%s) (%s) (%s) (%s)",
 		piecePlacementRegExpStr, sideToMoveRegExpStr, castlingAbilityRegExpStr,
 		enPassantTargetSquareRegExpStr, countRegExpStr, countRegExpStr)
-	fenRegExp = regexp.MustCompile(fenRegExpStr)
+	FenRegExp = regexp.MustCompile(fenRegExpStr)
 )
 
 // Piece Placement: The Piece Placement is determined rank by rank in big-endian order, that is starting
@@ -39,7 +39,7 @@ var (
 var (
 	piecePlacementLineRegExpStr = "[pnbrqkPNBRQK1-8]{1,8}"
 	piecePlacementRegExpStr     = fmt.Sprintf("%s(?:/%s){7}", piecePlacementLineRegExpStr, piecePlacementLineRegExpStr)
-	piecePlacementRegExp        = regexp.MustCompile(piecePlacementRegExpStr)
+	PiecePlacementRegExp        = regexp.MustCompile(piecePlacementRegExpStr)
 )
 
 // Side to move: Side to move is one lowercase letter for either White ('w') or Black ('b').
@@ -47,7 +47,7 @@ var (
 
 var (
 	sideToMoveRegExpStr = "[wb]"
-	sideToMoveRegExp    = regexp.MustCompile(sideToMoveRegExpStr)
+	SideToMoveRegExp    = regexp.MustCompile(sideToMoveRegExpStr)
 )
 
 // Castling ability: If neither side can castle, the symbol '-' is used, otherwise each of four individual
@@ -56,7 +56,7 @@ var (
 
 var (
 	castlingAbilityRegExpStr = "[-KQkq]{0,4}"
-	castlingAbilityRegExp    = regexp.MustCompile(castlingAbilityRegExpStr)
+	CastlingAbilityRegExp    = regexp.MustCompile(castlingAbilityRegExpStr)
 )
 
 // En passant target square: The en passant target square is specified after a double push of a pawn,
@@ -69,7 +69,7 @@ var (
 
 var (
 	enPassantTargetSquareRegExpStr = ".*"
-	enPassantTargetSquareRegExp    = regexp.MustCompile(enPassantTargetSquareRegExpStr)
+	EnPassantTargetSquareRegExp    = regexp.MustCompile(enPassantTargetSquareRegExpStr)
 )
 
 // Halfmove Clock: The halfmove clock specifies a decimal number of half moves with respect to the 50
@@ -79,7 +79,7 @@ var (
 
 var (
 	countRegExpStr = "[[:digit:]]{1,3}"
-	countRegExp    = regexp.MustCompile(countRegExpStr)
+	CountRegExp    = regexp.MustCompile(countRegExpStr)
 )
 
 // Fullmove counter: The number of the full moves in a game. It starts at 1, and is incremented after

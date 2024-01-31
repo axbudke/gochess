@@ -17,7 +17,7 @@ func (m MoveList) String() string {
 }
 
 type Move struct {
-	BoardI     position.BoardInterface
+	Position   *position.Position
 	From       position.Square
 	To         position.Square
 	Piece      position.PieceVal

@@ -5,17 +5,17 @@ import (
 	"math"
 )
 
+type PieceList []PieceVal
+
+func (l PieceList) PieceAt(s Square) PieceVal {
+	return l[int(s)]
+}
+
 var PromotionPieceVals = []PieceVal{
 	PieceVal_WhiteQueen,
 	PieceVal_WhiteRook,
 	PieceVal_WhiteBishop,
 	PieceVal_WhiteKnight,
-}
-
-type PieceList []PieceVal
-
-func (l PieceList) PieceAt(s Square) PieceVal {
-	return l[int(s)]
 }
 
 type PieceVal int8

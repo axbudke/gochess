@@ -7,27 +7,16 @@ import (
 	"strings"
 )
 
-type BoardInterface interface {
-	PieceList() PieceList
-	IsWhitesTurn() bool
-	CanCastle(isWhite, isShort bool) bool
-	EnPassantSquare() string
-	HalfmoveCount() int
-	FullmoveCount() int
-
-	String() string
-}
-
-func New(fenStr FEN) (BoardInterface, error) {
-	b := &Board{}
-	err := b.parseFEN(fenStr)
+func New(fenStr FEN) (*Position, error) {
+	p := &Position{}
+	err := p.parseFEN(fenStr)
 	if err != nil {
 		return nil, err
 	}
-	return b, nil
+	return p, nil
 }
 
-type Board struct {
+type Position struct {
 	pieceList  PieceList
 	whitesTurn bool
 	castling   struct {
@@ -41,37 +30,37 @@ type Board struct {
 	fullmoveCount   int
 }
 
-func (b Board) PieceList() PieceList    { return b.pieceList }
-func (b Board) IsWhitesTurn() bool      { return b.whitesTurn }
-func (b Board) EnPassantSquare() string { return b.enPassantSquare }
-func (b Board) HalfmoveCount() int      { return b.halfmoveCount }
-func (b Board) FullmoveCount() int      { return b.fullmoveCount }
-func (b Board) CanCastle(isWhite, isShort bool) bool {
+func (p Position) PieceList() PieceList    { return p.pieceList }
+func (p Position) IsWhitesTurn() bool      { return p.whitesTurn }
+func (p Position) EnPassantSquare() string { return p.enPassantSquare }
+func (p Position) HalfmoveCount() int      { return p.halfmoveCount }
+func (p Position) FullmoveCount() int      { return p.fullmoveCount }
+func (p Position) CanCastle(isWhite, isShort bool) bool {
 	if isWhite && isShort {
-		return b.castling.whiteShort
+		return p.castling.whiteShort
 	} else if isWhite && !isShort {
-		return b.castling.whiteLong
+		return p.castling.whiteLong
 	} else if !isWhite && isShort {
-		return b.castling.blackShort
+		return p.castling.blackShort
 	} else if !isWhite && !isShort {
-		return b.castling.blackLong
+		return p.castling.blackLong
 	}
 	return false
 }
 
-func (b Board) String() string {
-	return string(b.FEN())
+func (p Position) String() string {
+	return string(p.FEN())
 }
 
-func (b *Board) parseFEN(fenStr FEN) error {
+func (p *Position) parseFEN(fenStr FEN) error {
 	// Parse FEN with regexp
-	submatches := fenRegExp.FindStringSubmatch(string(fenStr))
+	submatches := FenRegExp.FindStringSubmatch(string(fenStr))
 	if submatches == nil {
 		return fmt.Errorf("failed to parse regexp")
 	}
 
 	// Parse PieceList from fenPiecePlacementStr
-	b.pieceList = make(PieceList, 64)
+	p.pieceList = make(PieceList, 64)
 	index := 0
 	pieceRows := strings.Split(submatches[1], "/")
 	for i := len(pieceRows) - 1; i >= 0; i-- {
@@ -84,7 +73,7 @@ func (b *Board) parseFEN(fenStr FEN) error {
 				if err != nil {
 					return err
 				}
-				b.pieceList[index] = v
+				p.pieceList[index] = v
 				index++
 			} else {
 				return fmt.Errorf("invalid piece syntax")
@@ -93,42 +82,42 @@ func (b *Board) parseFEN(fenStr FEN) error {
 	}
 
 	// Parse Active Color
-	b.whitesTurn = submatches[2] == "w"
+	p.whitesTurn = submatches[2] == "w"
 
 	// Parse Castling
-	b.castling.whiteShort = strings.Contains(submatches[3], "K")
-	b.castling.whiteLong = strings.Contains(submatches[3], "Q")
-	b.castling.blackShort = strings.Contains(submatches[3], "k")
-	b.castling.blackLong = strings.Contains(submatches[3], "q")
+	p.castling.whiteShort = strings.Contains(submatches[3], "K")
+	p.castling.whiteLong = strings.Contains(submatches[3], "Q")
+	p.castling.blackShort = strings.Contains(submatches[3], "k")
+	p.castling.blackLong = strings.Contains(submatches[3], "q")
 
 	// Parse En Passant Square
-	b.enPassantSquare = submatches[4]
+	p.enPassantSquare = submatches[4]
 
 	// Parse Halfmove Count
 	halfmoveCount, err := strconv.Atoi(submatches[5])
 	if err != nil {
 		return err
 	}
-	b.halfmoveCount = halfmoveCount
+	p.halfmoveCount = halfmoveCount
 
 	// Parse Fullmove Count
 	fullmoveCount, err := strconv.Atoi(submatches[6])
 	if err != nil {
 		return err
 	}
-	b.fullmoveCount = fullmoveCount
+	p.fullmoveCount = fullmoveCount
 
 	return nil
 }
 
-func (b Board) FEN() FEN {
+func (p Position) FEN() FEN {
 	piecePlacementStr := ""
 	pieceRows := []string{}
 	emptyCount := 0
 	for r := 0; r < 8; r++ {
 		pieceRow := ""
 		for f := 0; f < 8; f++ {
-			pieceVal := b.pieceList[r*8+f]
+			pieceVal := p.pieceList[r*8+f]
 			if pieceVal == PieceVal_Empty {
 				emptyCount++
 				continue
