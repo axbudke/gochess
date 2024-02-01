@@ -1,8 +1,8 @@
-package position_test
+package notation_test
 
 import (
 	"fmt"
-	"gochess/pkg/position"
+	"gochess/pkg/notation"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestPosition(t *testing.T) {
-	startingPosition, err := position.New(position.StartingFEN)
+	startingPosition, err := notation.New(notation.StartingFEN)
 	require.NoError(t, err)
 	fmt.Println(startingPosition.String())
 
@@ -25,6 +25,6 @@ func TestPosition(t *testing.T) {
 
 func BenchmarkPosition(b *testing.B) {
 	b.Run("Just New", func(b *testing.B) {
-		_, _ = position.New(position.StartingFEN)
+		_, _ = notation.New(notation.StartingFEN)
 	})
 }

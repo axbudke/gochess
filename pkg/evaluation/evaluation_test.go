@@ -2,7 +2,7 @@ package evaluation_test
 
 import (
 	"gochess/pkg/evaluation"
-	"gochess/pkg/position"
+	"gochess/pkg/notation"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestEvaluate(t *testing.T) {
-	startingPosition, err := position.New(position.StartingFEN)
+	startingPosition, err := notation.New(notation.StartingFEN)
 	require.NoError(t, err)
 
 	assert.Equal(t, 0, evaluation.Evaluate(startingPosition))

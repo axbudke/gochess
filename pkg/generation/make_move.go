@@ -1,7 +1,7 @@
 package generation
 
-import "gochess/pkg/position"
+import "gochess/pkg/notation"
 
-func MakeMove(b *position.Position, move Move) *position.Position {
+func MakeMove(b *notation.Position, move notation.Move) *notation.Position {
 	return b
 }

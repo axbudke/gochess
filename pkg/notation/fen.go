@@ -1,4 +1,4 @@
-package position
+package notation
 
 import (
 	"fmt"

@@ -1,8 +1,7 @@
-package generation
+package notation
 
 import (
 	"fmt"
-	"gochess/pkg/position"
 )
 
 // MoveList is a list of moves
@@ -17,12 +16,12 @@ func (m MoveList) String() string {
 }
 
 type Move struct {
-	From       position.Square
-	To         position.Square
-	Piece      position.PieceVal
+	From       Square
+	To         Square
+	Piece      PieceVal
 	IsCapture  bool
-	PromotedTo position.PieceVal
-	PieceList  position.PieceList
+	PromotedTo PieceVal
+	PieceList  PieceList
 }
 
 func (m Move) String() string {
@@ -53,7 +52,7 @@ func (m Move) LAN() LAN {
 		capStr = "x"
 	}
 
-	if m.Piece != position.PieceVal_WhitePawn {
+	if m.Piece != PieceVal_WhitePawn {
 		return LAN(fmt.Sprintf("%s%s%s%s", m.Piece.PieceSymbol(), m.From, capStr, m.To))
 	} else {
 		return LAN(fmt.Sprintf("%s%s%s%s", m.From, capStr, m.To, m.PromotedTo))
@@ -67,7 +66,7 @@ func (m Move) LAN() LAN {
 type SAN string
 
 func (m Move) SAN() SAN {
-	if m.Piece != position.PieceVal_WhitePawn {
+	if m.Piece != PieceVal_WhitePawn {
 		capStr := ""
 		if m.IsCapture {
 			capStr = "x"
