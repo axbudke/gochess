@@ -17,12 +17,12 @@ func (m MoveList) String() string {
 }
 
 type Move struct {
-	Position   *position.Position
 	From       position.Square
 	To         position.Square
 	Piece      position.PieceVal
 	IsCapture  bool
 	PromotedTo position.PieceVal
+	PieceList  position.PieceList
 }
 
 func (m Move) String() string {
@@ -78,6 +78,7 @@ func (m Move) SAN() SAN {
 	} else {
 		if m.IsCapture {
 			fromF, fromR := m.From.FileRank()
+			// TODO solve ambiguities
 			return SAN(fmt.Sprintf("%s%sx%s%s", fromF, fromR, m.To, m.PromotedTo))
 		}
 		return SAN(fmt.Sprintf("%s%s", m.To, m.PromotedTo))

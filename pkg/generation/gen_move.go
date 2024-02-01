@@ -119,7 +119,7 @@ func GeneratePromotionMoves(p *position.Position, move *Move) MoveList {
 
 	for _, promotionPiece := range position.PromotionPieceVals {
 		promotionMove := &Move{
-			Position:   move.Position,
+			PieceList:  move.PieceList,
 			From:       move.From,
 			To:         move.To,
 			Piece:      move.Piece,
@@ -207,10 +207,10 @@ func GenerateMove(p *position.Position, fromSquare position.Square, toR position
 
 	// Create basic move
 	move = &Move{
-		Position: p,
-		From:     fromSquare,
-		To:       toSquare,
-		Piece:    pVal,
+		PieceList: p.PieceList(),
+		From:      fromSquare,
+		To:        toSquare,
+		Piece:     pVal,
 	}
 
 	// Check what piece is on toSquare

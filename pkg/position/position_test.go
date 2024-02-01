@@ -1,6 +1,7 @@
 package position_test
 
 import (
+	"fmt"
 	"gochess/pkg/position"
 	"testing"
 
@@ -8,9 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBoard(t *testing.T) {
+func TestPosition(t *testing.T) {
 	startingPosition, err := position.New(position.StartingFEN)
 	require.NoError(t, err)
+	fmt.Println(startingPosition.String())
 
 	assert.Equal(t, true, startingPosition.IsWhitesTurn())
 	assert.Equal(t, true, startingPosition.CanCastle(false, false))
@@ -21,7 +23,7 @@ func TestBoard(t *testing.T) {
 	assert.Equal(t, 1, startingPosition.FullmoveCount())
 }
 
-func BenchmarkBoard(b *testing.B) {
+func BenchmarkPosition(b *testing.B) {
 	b.Run("Just New", func(b *testing.B) {
 		_, _ = position.New(position.StartingFEN)
 	})

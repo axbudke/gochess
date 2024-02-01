@@ -25,14 +25,14 @@ type Position struct {
 		blackShort bool
 		blackLong  bool
 	}
-	enPassantSquare string
+	enPassantSquare Square
 	halfmoveCount   int
 	fullmoveCount   int
 }
 
 func (p Position) PieceList() PieceList    { return p.pieceList }
 func (p Position) IsWhitesTurn() bool      { return p.whitesTurn }
-func (p Position) EnPassantSquare() string { return p.enPassantSquare }
+func (p Position) EnPassantSquare() Square { return p.enPassantSquare }
 func (p Position) HalfmoveCount() int      { return p.halfmoveCount }
 func (p Position) FullmoveCount() int      { return p.fullmoveCount }
 func (p Position) CanCastle(isWhite, isShort bool) bool {
@@ -82,7 +82,7 @@ func (p *Position) parseFEN(fenStr FEN) error {
 	}
 
 	// Parse Active Color
-	p.whitesTurn = submatches[2] == "w"
+	p.whitesTurn = (submatches[2] == "w")
 
 	// Parse Castling
 	p.castling.whiteShort = strings.Contains(submatches[3], "K")
@@ -91,21 +91,23 @@ func (p *Position) parseFEN(fenStr FEN) error {
 	p.castling.blackLong = strings.Contains(submatches[3], "q")
 
 	// Parse En Passant Square
-	p.enPassantSquare = submatches[4]
+	var err error
+	p.enPassantSquare, err = NewSquareFromString(submatches[4])
+	if err != nil {
+		return err
+	}
 
 	// Parse Halfmove Count
-	halfmoveCount, err := strconv.Atoi(submatches[5])
+	p.halfmoveCount, err = strconv.Atoi(submatches[5])
 	if err != nil {
 		return err
 	}
-	p.halfmoveCount = halfmoveCount
 
 	// Parse Fullmove Count
-	fullmoveCount, err := strconv.Atoi(submatches[6])
+	p.fullmoveCount, err = strconv.Atoi(submatches[6])
 	if err != nil {
 		return err
 	}
-	p.fullmoveCount = fullmoveCount
 
 	return nil
 }

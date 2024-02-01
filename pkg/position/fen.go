@@ -55,7 +55,7 @@ var (
 // <Castling ability> ::= '-' | ['K'] ['Q'] ['k'] ['q'] (1..4)
 
 var (
-	castlingAbilityRegExpStr = "[-KQkq]{0,4}"
+	castlingAbilityRegExpStr = "[-KQkq]{1,4}"
 	CastlingAbilityRegExp    = regexp.MustCompile(castlingAbilityRegExpStr)
 )
 
@@ -68,7 +68,7 @@ var (
 // <eprank>     ::= '3' | '6'
 
 var (
-	enPassantTargetSquareRegExpStr = ".*"
+	enPassantTargetSquareRegExpStr = "-|([a-h][36])"
 	EnPassantTargetSquareRegExp    = regexp.MustCompile(enPassantTargetSquareRegExpStr)
 )
 
@@ -77,16 +77,16 @@ var (
 // <Halfmove Clock> ::= <digit> {<digit>}
 // <digit> ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
-var (
-	countRegExpStr = "[[:digit:]]{1,3}"
-	CountRegExp    = regexp.MustCompile(countRegExpStr)
-)
-
 // Fullmove counter: The number of the full moves in a game. It starts at 1, and is incremented after
 // each Black's move.
 // <Fullmove counter> ::= <digit19> {<digit>}
 // <digit19> ::= '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 // <digit>   ::= '0' | <digit19>
+
+var (
+	countRegExpStr = "[[:digit:]]{1,3}"
+	CountRegExp    = regexp.MustCompile(countRegExpStr)
+)
 
 // FEN Examples
 const (
