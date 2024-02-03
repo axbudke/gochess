@@ -5,39 +5,38 @@ import (
 	"math"
 )
 
-type PieceList []PieceVal
+type PieceList []Piece
 
-func (l PieceList) PieceAt(s Square) PieceVal {
+func (l PieceList) PieceAt(s Square) Piece {
 	return l[int(s)]
 }
 
-var PromotionPieceVals = []PieceVal{
-	PieceVal_WhiteQueen,
-	PieceVal_WhiteRook,
-	PieceVal_WhiteBishop,
-	PieceVal_WhiteKnight,
+var PromotionPieces = []Piece{
+	Piece_WhiteQueen,
+	Piece_WhiteRook,
+	Piece_WhiteBishop,
+	Piece_WhiteKnight,
 }
 
-type PieceVal int8
+type Piece int8
 
-// pieceVal enums
 const (
-	PieceVal_Empty       PieceVal = 0
-	PieceVal_WhitePawn   PieceVal = 1
-	PieceVal_WhiteKnight PieceVal = 2
-	PieceVal_WhiteBishop PieceVal = 3
-	PieceVal_WhiteRook   PieceVal = 4
-	PieceVal_WhiteQueen  PieceVal = 5
-	PieceVal_WhiteKing   PieceVal = 6
-	PieceVal_BlackPawn   PieceVal = -1
-	PieceVal_BlackKnight PieceVal = -2
-	PieceVal_BlackBishop PieceVal = -3
-	PieceVal_BlackRook   PieceVal = -4
-	PieceVal_BlackQueen  PieceVal = -5
-	PieceVal_BlackKing   PieceVal = -6
+	Piece_Empty       Piece = 0
+	Piece_WhitePawn   Piece = 1
+	Piece_WhiteKnight Piece = 2
+	Piece_WhiteBishop Piece = 3
+	Piece_WhiteRook   Piece = 4
+	Piece_WhiteQueen  Piece = 5
+	Piece_WhiteKing   Piece = 6
+	Piece_BlackPawn   Piece = -1
+	Piece_BlackKnight Piece = -2
+	Piece_BlackBishop Piece = -3
+	Piece_BlackRook   Piece = -4
+	Piece_BlackQueen  Piece = -5
+	Piece_BlackKing   Piece = -6
 )
 
-func (v PieceVal) String() string {
+func (v Piece) String() string {
 	c, err := v.Char()
 	if err != nil {
 		return ""
@@ -45,39 +44,39 @@ func (v PieceVal) String() string {
 	return fmt.Sprint(c)
 }
 
-func (v PieceVal) PieceSymbol() string {
-	c, err := PieceVal(int(math.Abs(float64(v)))).Char()
+func (v Piece) Symbol() string {
+	c, err := Piece(int(math.Abs(float64(v)))).Char()
 	if err != nil {
 		return ""
 	}
 	return fmt.Sprint(c)
 }
 
-func (v PieceVal) Char() (PieceChar, error) {
+func (v Piece) Char() (PieceChar, error) {
 	switch v {
-	case PieceVal_WhitePawn:
+	case Piece_WhitePawn:
 		return PieceChar_WhitePawn, nil
-	case PieceVal_WhiteKnight:
+	case Piece_WhiteKnight:
 		return PieceChar_WhiteKnight, nil
-	case PieceVal_WhiteBishop:
+	case Piece_WhiteBishop:
 		return PieceChar_WhiteBishop, nil
-	case PieceVal_WhiteRook:
+	case Piece_WhiteRook:
 		return PieceChar_WhiteRook, nil
-	case PieceVal_WhiteQueen:
+	case Piece_WhiteQueen:
 		return PieceChar_WhiteQueen, nil
-	case PieceVal_WhiteKing:
+	case Piece_WhiteKing:
 		return PieceChar_WhiteKing, nil
-	case PieceVal_BlackPawn:
+	case Piece_BlackPawn:
 		return PieceChar_BlackPawn, nil
-	case PieceVal_BlackKnight:
+	case Piece_BlackKnight:
 		return PieceChar_BlackKnight, nil
-	case PieceVal_BlackBishop:
+	case Piece_BlackBishop:
 		return PieceChar_BlackBishop, nil
-	case PieceVal_BlackRook:
+	case Piece_BlackRook:
 		return PieceChar_BlackRook, nil
-	case PieceVal_BlackQueen:
+	case Piece_BlackQueen:
 		return PieceChar_BlackQueen, nil
-	case PieceVal_BlackKing:
+	case Piece_BlackKing:
 		return PieceChar_BlackKing, nil
 	default:
 		return PieceChar('a'), fmt.Errorf("invalid value")
@@ -86,7 +85,6 @@ func (v PieceVal) Char() (PieceChar, error) {
 
 type PieceChar byte
 
-// pieceChar enums
 const (
 	PieceChar_WhitePawn   PieceChar = 'P'
 	PieceChar_WhiteKnight PieceChar = 'N'
@@ -106,33 +104,33 @@ func (c PieceChar) String() string {
 	return string([]byte{byte(c)})
 }
 
-func (c PieceChar) Val() (PieceVal, error) {
+func (c PieceChar) Val() (Piece, error) {
 	switch c {
 	case PieceChar_WhitePawn:
-		return PieceVal_WhitePawn, nil
+		return Piece_WhitePawn, nil
 	case PieceChar_WhiteKnight:
-		return PieceVal_WhiteKnight, nil
+		return Piece_WhiteKnight, nil
 	case PieceChar_WhiteBishop:
-		return PieceVal_WhiteBishop, nil
+		return Piece_WhiteBishop, nil
 	case PieceChar_WhiteRook:
-		return PieceVal_WhiteRook, nil
+		return Piece_WhiteRook, nil
 	case PieceChar_WhiteQueen:
-		return PieceVal_WhiteQueen, nil
+		return Piece_WhiteQueen, nil
 	case PieceChar_WhiteKing:
-		return PieceVal_WhiteKing, nil
+		return Piece_WhiteKing, nil
 	case PieceChar_BlackPawn:
-		return PieceVal_BlackPawn, nil
+		return Piece_BlackPawn, nil
 	case PieceChar_BlackKnight:
-		return PieceVal_BlackKnight, nil
+		return Piece_BlackKnight, nil
 	case PieceChar_BlackBishop:
-		return PieceVal_BlackBishop, nil
+		return Piece_BlackBishop, nil
 	case PieceChar_BlackRook:
-		return PieceVal_BlackRook, nil
+		return Piece_BlackRook, nil
 	case PieceChar_BlackQueen:
-		return PieceVal_BlackQueen, nil
+		return Piece_BlackQueen, nil
 	case PieceChar_BlackKing:
-		return PieceVal_BlackKing, nil
+		return Piece_BlackKing, nil
 	default:
-		return PieceVal_Empty, fmt.Errorf("invalid char")
+		return Piece_Empty, fmt.Errorf("invalid char")
 	}
 }

@@ -11,21 +11,21 @@ import (
 
 func TestGenerateSudoLegalMoves(t *testing.T) {
 	fmt.Printf("FEN: %s\n", notation.StartingFEN)
-	startingPosition, err := notation.New(notation.StartingFEN)
+	startingPosition, err := notation.NewPosition(notation.StartingFEN)
 	require.NoError(t, err)
 	moves := generation.GenerateSudoLegalMoves(startingPosition)
 	fmt.Printf("Moves: %s\n", moves)
 
 	oneMoveFen := notation.FEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
 	fmt.Printf("FEN: %s\n", oneMoveFen)
-	oneMovePosition, err := notation.New(oneMoveFen)
+	oneMovePosition, err := notation.NewPosition(oneMoveFen)
 	require.NoError(t, err)
 	moves = generation.GenerateSudoLegalMoves(oneMovePosition)
 	fmt.Printf("Moves: %s\n", moves)
 }
 
 func BenchmarkGenerateSudoLegalMoves(b *testing.B) {
-	startingBoard, err := notation.New(notation.StartingFEN)
+	startingBoard, err := notation.NewPosition(notation.StartingFEN)
 	require.NoError(b, err)
 	b.Run("GenerateSudoLegalMoves", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {

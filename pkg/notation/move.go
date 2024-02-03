@@ -18,9 +18,9 @@ func (m MoveList) String() string {
 type Move struct {
 	From       Square
 	To         Square
-	Piece      PieceVal
+	Piece      Piece
 	IsCapture  bool
-	PromotedTo PieceVal
+	PromotedTo Piece
 	PieceList  PieceList
 }
 
@@ -36,6 +36,10 @@ func (m Move) String() string {
 // <promoted to>   ::= 'q'|'r'|'b'|'n'
 type PCN string
 
+func NewMoveFromPCN(pcn PCN) (Move, error) {
+	return Move{}, nil
+}
+
 func (m Move) PCN() PCN {
 	return PCN(fmt.Sprintf("%s%s%s", m.From, m.To, m.PromotedTo))
 }
@@ -46,14 +50,18 @@ func (m Move) PCN() PCN {
 // <Piece symbol> ::= 'N' | 'B' | 'R' | 'Q' | 'K'
 type LAN string
 
+func NewMoveFromLAN(lan LAN) (Move, error) {
+	return Move{}, nil
+}
+
 func (m Move) LAN() LAN {
 	capStr := ""
 	if m.IsCapture {
 		capStr = "x"
 	}
 
-	if m.Piece != PieceVal_WhitePawn {
-		return LAN(fmt.Sprintf("%s%s%s%s", m.Piece.PieceSymbol(), m.From, capStr, m.To))
+	if m.Piece != Piece_WhitePawn {
+		return LAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), m.From, capStr, m.To))
 	} else {
 		return LAN(fmt.Sprintf("%s%s%s%s", m.From, capStr, m.To, m.PromotedTo))
 	}
@@ -65,15 +73,19 @@ func (m Move) LAN() LAN {
 // <SAN move descriptor pawn push>     ::= <to square>[<promoted to>]
 type SAN string
 
+func NewMoveFromSAN(san SAN) (Move, error) {
+	return Move{}, nil
+}
+
 func (m Move) SAN() SAN {
-	if m.Piece != PieceVal_WhitePawn {
+	if m.Piece != Piece_WhitePawn {
 		capStr := ""
 		if m.IsCapture {
 			capStr = "x"
 		}
 		fromStr := ""
 		// TODO solve ambiguities
-		return SAN(fmt.Sprintf("%s%s%s%s", m.Piece.PieceSymbol(), fromStr, capStr, m.To))
+		return SAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), fromStr, capStr, m.To))
 	} else {
 		if m.IsCapture {
 			fromF, fromR := m.From.FileRank()

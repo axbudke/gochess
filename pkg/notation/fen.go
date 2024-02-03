@@ -39,7 +39,7 @@ var (
 var (
 	piecePlacementLineRegExpStr = "[pnbrqkPNBRQK1-8]{1,8}"
 	piecePlacementRegExpStr     = fmt.Sprintf("%s(?:/%s){7}", piecePlacementLineRegExpStr, piecePlacementLineRegExpStr)
-	PiecePlacementRegExp        = regexp.MustCompile(piecePlacementRegExpStr)
+	piecePlacementRegExp        = regexp.MustCompile(piecePlacementRegExpStr)
 )
 
 // Side to move: Side to move is one lowercase letter for either White ('w') or Black ('b').
@@ -47,7 +47,7 @@ var (
 
 var (
 	sideToMoveRegExpStr = "[wb]"
-	SideToMoveRegExp    = regexp.MustCompile(sideToMoveRegExpStr)
+	sideToMoveRegExp    = regexp.MustCompile(sideToMoveRegExpStr)
 )
 
 // Castling ability: If neither side can castle, the symbol '-' is used, otherwise each of four individual
@@ -56,7 +56,7 @@ var (
 
 var (
 	castlingAbilityRegExpStr = "[-KQkq]{1,4}"
-	CastlingAbilityRegExp    = regexp.MustCompile(castlingAbilityRegExpStr)
+	castlingAbilityRegExp    = regexp.MustCompile(castlingAbilityRegExpStr)
 )
 
 // En passant target square: The en passant target square is specified after a double push of a pawn,
@@ -68,8 +68,8 @@ var (
 // <eprank>     ::= '3' | '6'
 
 var (
-	enPassantTargetSquareRegExpStr = "-|([a-h][36])"
-	EnPassantTargetSquareRegExp    = regexp.MustCompile(enPassantTargetSquareRegExpStr)
+	enPassantTargetSquareRegExpStr = "-|(?:[a-h][36])"
+	enPassantTargetSquareRegExp    = regexp.MustCompile(enPassantTargetSquareRegExpStr)
 )
 
 // Halfmove Clock: The halfmove clock specifies a decimal number of half moves with respect to the 50
@@ -85,7 +85,7 @@ var (
 
 var (
 	countRegExpStr = "[[:digit:]]{1,3}"
-	CountRegExp    = regexp.MustCompile(countRegExpStr)
+	countRegExp    = regexp.MustCompile(countRegExpStr)
 )
 
 // FEN Examples

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func New(fenStr FEN) (*Position, error) {
+func NewPosition(fenStr FEN) (*Position, error) {
 	p := &Position{}
 	err := p.parseFEN(fenStr)
 	if err != nil {
@@ -17,24 +17,19 @@ func New(fenStr FEN) (*Position, error) {
 }
 
 type Position struct {
-	pieceList  PieceList
-	whitesTurn bool
+	PieceList  PieceList
+	WhitesTurn bool
 	castling   struct {
 		whiteShort bool
 		whiteLong  bool
 		blackShort bool
 		blackLong  bool
 	}
-	enPassantSquare Square
-	halfmoveCount   int
-	fullmoveCount   int
+	EnPassantSquare Square
+	HalfmoveCount   int
+	FullmoveCount   int
 }
 
-func (p Position) PieceList() PieceList    { return p.pieceList }
-func (p Position) IsWhitesTurn() bool      { return p.whitesTurn }
-func (p Position) EnPassantSquare() Square { return p.enPassantSquare }
-func (p Position) HalfmoveCount() int      { return p.halfmoveCount }
-func (p Position) FullmoveCount() int      { return p.fullmoveCount }
 func (p Position) CanCastle(isWhite, isShort bool) bool {
 	if isWhite && isShort {
 		return p.castling.whiteShort
@@ -60,7 +55,7 @@ func (p *Position) parseFEN(fenStr FEN) error {
 	}
 
 	// Parse PieceList from fenPiecePlacementStr
-	p.pieceList = make(PieceList, 64)
+	p.PieceList = make(PieceList, 64)
 	index := 0
 	pieceRows := strings.Split(submatches[1], "/")
 	for i := len(pieceRows) - 1; i >= 0; i-- {
@@ -73,7 +68,7 @@ func (p *Position) parseFEN(fenStr FEN) error {
 				if err != nil {
 					return err
 				}
-				p.pieceList[index] = v
+				p.PieceList[index] = v
 				index++
 			} else {
 				return fmt.Errorf("invalid piece syntax")
@@ -81,8 +76,8 @@ func (p *Position) parseFEN(fenStr FEN) error {
 		}
 	}
 
-	// Parse Active Color
-	p.whitesTurn = (submatches[2] == "w")
+	// Parse Side to Move
+	p.WhitesTurn = (submatches[2] == "w")
 
 	// Parse Castling
 	p.castling.whiteShort = strings.Contains(submatches[3], "K")
@@ -92,35 +87,39 @@ func (p *Position) parseFEN(fenStr FEN) error {
 
 	// Parse En Passant Square
 	var err error
-	p.enPassantSquare, err = NewSquareFromString(submatches[4])
-	if err != nil {
-		return err
+	if submatches[4] == "-" {
+		p.EnPassantSquare = Square(-1)
+	} else {
+		p.EnPassantSquare, err = NewSquareFromString(submatches[4])
+		if err != nil {
+			return fmt.Errorf("failed to parse square: %w", err)
+		}
 	}
 
 	// Parse Halfmove Count
-	p.halfmoveCount, err = strconv.Atoi(submatches[5])
+	p.HalfmoveCount, err = strconv.Atoi(submatches[5])
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse halfmove count: %w", err)
 	}
 
 	// Parse Fullmove Count
-	p.fullmoveCount, err = strconv.Atoi(submatches[6])
+	p.FullmoveCount, err = strconv.Atoi(submatches[6])
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse fullmove count: %w", err)
 	}
 
 	return nil
 }
 
 func (p Position) FEN() FEN {
-	piecePlacementStr := ""
+	// Print Piece Placement
 	pieceRows := []string{}
 	emptyCount := 0
 	for r := 0; r < 8; r++ {
 		pieceRow := ""
 		for f := 0; f < 8; f++ {
-			pieceVal := p.pieceList[r*8+f]
-			if pieceVal == PieceVal_Empty {
+			piece := p.PieceList[r*8+f]
+			if piece == Piece_Empty {
 				emptyCount++
 				continue
 			}
@@ -128,16 +127,56 @@ func (p Position) FEN() FEN {
 				pieceRow += fmt.Sprint(emptyCount)
 				emptyCount = 0
 			}
-			pieceRow += fmt.Sprint(pieceVal.String())
+			pieceRow += fmt.Sprint(piece.String())
+		}
+		if emptyCount != 0 {
+			pieceRow += fmt.Sprint(emptyCount)
+			emptyCount = 0
 		}
 		pieceRows = append(pieceRows, pieceRow)
 	}
-	for i := len(pieceRows) - 1; i >= 0; i-- {
-		piecePlacementStr += pieceRows[i]
+	piecePlacementStr := pieceRows[len(pieceRows)-1]
+	for i := len(pieceRows) - 2; i >= 0; i-- {
+		piecePlacementStr += "/" + pieceRows[i]
 	}
-	fmt.Printf("%s", piecePlacementStr)
 
-	fenStr := ""
+	// Print Side to Move
+	sideToMoveStr := "b"
+	if p.WhitesTurn {
+		sideToMoveStr = "w"
+	}
 
-	return FEN(fenStr)
+	// Print Castling
+	castlingStr := ""
+	if p.castling.whiteShort {
+		castlingStr += "K"
+	}
+	if p.castling.whiteLong {
+		castlingStr += "Q"
+	}
+	if p.castling.blackShort {
+		castlingStr += "k"
+	}
+	if p.castling.blackLong {
+		castlingStr += "q"
+	}
+	if castlingStr == "" {
+		castlingStr = "-"
+	}
+
+	// Print En Passant Square
+	enPassantTargetSquareStr := "-"
+	if p.EnPassantSquare != Square(-1) {
+		enPassantTargetSquareStr = p.EnPassantSquare.String()
+	}
+
+	// Parse Halfmove Count
+	halfmoveCountStr := strconv.Itoa(p.HalfmoveCount)
+
+	// Parse Fullmove Count
+	fullmoveCountStr := strconv.Itoa(p.FullmoveCount)
+
+	return FEN(fmt.Sprintf("%s %s %s %s %s %s",
+		piecePlacementStr, sideToMoveStr, castlingStr,
+		enPassantTargetSquareStr, halfmoveCountStr, fullmoveCountStr))
 }

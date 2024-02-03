@@ -10,7 +10,7 @@ import (
 )
 
 func TestEvaluate(t *testing.T) {
-	startingPosition, err := notation.New(notation.StartingFEN)
+	startingPosition, err := notation.NewPosition(notation.StartingFEN)
 	require.NoError(t, err)
 
 	assert.Equal(t, 0, evaluation.Evaluate(startingPosition))
