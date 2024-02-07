@@ -30,6 +30,21 @@ type Position struct {
 	FullmoveCount   int
 }
 
+func (p Position) PieceAt(s Square) Piece {
+	return p.PieceList.PieceAt(s)
+}
+
+func (p Position) PieceAtIsSame(s Square) bool {
+	// inverter used to determine same/opposite color
+	inverter := 1
+	if !p.WhitesTurn {
+		inverter = -1
+	}
+
+	piece := p.PieceList.PieceAt(s)
+	return piece*Piece(inverter) > 0
+}
+
 func (p Position) CanCastle(isWhite, isShort bool) bool {
 	if isWhite && isShort {
 		return p.castling.whiteShort

@@ -36,6 +36,10 @@ const (
 	Piece_BlackKing   Piece = -6
 )
 
+func (v Piece) IsPawn() bool {
+	return Piece(math.Abs(float64(v))) == Piece_WhitePawn
+}
+
 func (v Piece) String() string {
 	c, err := v.Char()
 	if err != nil {

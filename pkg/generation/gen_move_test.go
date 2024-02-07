@@ -39,7 +39,7 @@ func BenchmarkGenerateSudoLegalMoves(b *testing.B) {
 	})
 	b.Run("GenerateMove", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			_, _ = generation.GenerateMove(startingBoard, notation.Square_a2, notation.Rank3, notation.FileA)
+			_ = generation.GenerateNormalMove(startingBoard, notation.Square_a2, notation.Square_a3)
 		}
 	})
 }
