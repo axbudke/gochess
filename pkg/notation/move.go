@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-// MoveList is a list of moves
+// ==================== Move List ====================
+
 type MoveList []*Move
 
 func (m MoveList) String() string {
@@ -14,6 +15,38 @@ func (m MoveList) String() string {
 	}
 	return str
 }
+
+func (m MoveList) FindMovesFrom(fromSquare Square) MoveList {
+	moves := make(MoveList, 0, len(m))
+	for _, move := range m {
+		if move.From == fromSquare {
+			moves = append(moves, move)
+		}
+	}
+	return moves
+}
+
+func (m MoveList) FindMovesTo(toSquare Square) MoveList {
+	moves := make(MoveList, 0, len(m))
+	for _, move := range m {
+		if move.To == toSquare {
+			moves = append(moves, move)
+		}
+	}
+	return moves
+}
+
+func (m MoveList) FindMovesNotFrom(fromSquare Square) MoveList {
+	moves := make(MoveList, 0, len(m))
+	for _, move := range m {
+		if move.From != fromSquare {
+			moves = append(moves, move)
+		}
+	}
+	return moves
+}
+
+// ==================== Move ====================
 
 type Move struct {
 	From       Square

@@ -30,19 +30,38 @@ type Position struct {
 	FullmoveCount   int
 }
 
+func (p Position) String() string {
+	return string(p.FEN())
+}
+
+// ==================== Piece Functions ====================
+
 func (p Position) PieceAt(s Square) Piece {
 	return p.PieceList.PieceAt(s)
 }
 
 func (p Position) PieceAtIsSame(s Square) bool {
 	// inverter used to determine same/opposite color
-	inverter := 1
-	if !p.WhitesTurn {
-		inverter = -1
-	}
+	inverter := func() int {
+		if p.WhitesTurn {
+			return 1
+		} else {
+			return -1
+		}
+	}()
 
 	piece := p.PieceList.PieceAt(s)
 	return piece*Piece(inverter) > 0
+}
+
+// ==================== Castling Functions ====================
+
+func (p Position) CanWhiteCastle() bool {
+	return p.castling.whiteLong || p.castling.whiteShort
+}
+
+func (p Position) CanBlackCastle() bool {
+	return p.castling.blackLong || p.castling.blackShort
 }
 
 func (p Position) CanCastle(isWhite, isShort bool) bool {
@@ -58,9 +77,7 @@ func (p Position) CanCastle(isWhite, isShort bool) bool {
 	return false
 }
 
-func (p Position) String() string {
-	return string(p.FEN())
-}
+// ==================== Fen Functions ====================
 
 func (p *Position) parseFEN(fenStr FEN) error {
 	// Parse FEN with regexp

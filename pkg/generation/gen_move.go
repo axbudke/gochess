@@ -6,18 +6,58 @@ import (
 )
 
 func GenerateMoves(p *notation.Position) notation.MoveList {
+	// Find King
+	inverter := 1
+	if !p.WhitesTurn {
+		inverter = -1
+	}
+	var kingSquare notation.Square
+	for squareInt, piece := range p.PieceList {
+		if piece == notation.Piece_WhiteKing*notation.Piece(inverter) {
+			kingSquare = notation.Square(squareInt)
+		}
+	}
 
-	// Generate sudo-legal moves
-	moves := GenerateSudoLegalMoves(p)
+	// Generate all Checks on King
+	checkMoves, pinnedPieces := GenerateChecksAndPins(p, kingSquare)
 
-	// Check that the king is not in check for any of those moves
-	// TODO
-	// checkMoves, pinnedSquares := FindReverseKingMoves(p)
+	if len(checkMoves) >= 2 {
+		// Double Check, Only King moves are valid
+		return GenerateKingMoves(p, kingSquare)
+	}
 
-	return moves
+	// Generate pseudo legal moves
+	psuedoLegalMoves := GeneratePseudoLegalMoves(p)
+
+	// Filter moves of pinned pieces
+	for _, pinnedPiece := range pinnedPieces {
+		psuedoLegalMoves = psuedoLegalMoves.FindMovesNotFrom(pinnedPiece)
+	}
+
+	if len(checkMoves) == 1 {
+		// Single Check, Only King moves or blocking moves
+
+		// Pre-allocate move list
+		moves := make(notation.MoveList, 0, len(psuedoLegalMoves))
+
+		// King Moves
+		moves = append(moves, psuedoLegalMoves.FindMovesFrom(kingSquare)...)
+
+		// Moves to capture checking piece
+		moves = append(moves, psuedoLegalMoves.FindMovesTo(checkMoves[0].From)...)
+
+		// Blocking Moves
+		for _, square := range notation.SquaresInBetween(kingSquare, checkMoves[0].From) {
+			moves = append(moves, psuedoLegalMoves.FindMovesTo(square)...)
+		}
+
+		return moves
+	}
+
+	return psuedoLegalMoves
 }
 
-func FindReverseKingMoves(p *notation.Position) (notation.MoveList, []notation.Square) {
+func GenerateChecksAndPins(p *notation.Position, kingSquare notation.Square) (notation.MoveList, []notation.Square) {
 	checkMoves := notation.MoveList{}
 	pinnedSquares := []notation.Square{}
 
@@ -26,25 +66,18 @@ func FindReverseKingMoves(p *notation.Position) (notation.MoveList, []notation.S
 		inverter = -1
 	}
 
-	// Find King
-	var kingSquare notation.Square
-	for squareInt, piece := range p.PieceList {
-		if piece == notation.Piece_WhiteKing*notation.Piece(inverter) {
-			kingSquare = notation.Square(squareInt)
-		}
-	}
 	f, r := kingSquare.FileRank()
 
-	// Find knight checks
-	for _, pair := range KnightMovementPairs {
+	// Find Knight/Pawn checks
+	for _, pair := range append(KnightMovementPairs, []MovementPair{{1 * inverter, 1}, {1 * inverter, -1}}...) {
 		// Check square is valid
 		fromSquare, err := notation.NewSquare(r+notation.Rank(pair.RP), f+notation.File(pair.FP))
 		if err != nil {
 			continue
 		}
 
-		// Check type of move
-		move := GenerateReverseMove(p, kingSquare, fromSquare)
+		// Create Move
+		move := GenerateMove(p, fromSquare, kingSquare)
 		if move == nil {
 			continue
 		}
@@ -55,9 +88,7 @@ func FindReverseKingMoves(p *notation.Position) (notation.MoveList, []notation.S
 		}
 	}
 
-	// Find Pawn checks
-
-	// Find Bishop or Queen checks and pinned pieces
+	// Find Bishop/Queen checks and pinned pieces
 	for _, pair := range BishopMovementPairs {
 		var possiblePinnedPiece *notation.Square
 		for i := 1; i <= 7; i++ {
@@ -67,15 +98,16 @@ func FindReverseKingMoves(p *notation.Position) (notation.MoveList, []notation.S
 				break
 			}
 
-			// Check type of move
-			move := GenerateReverseMove(p, kingSquare, fromSquare)
+			// Create move
+			move := GenerateMove(p, fromSquare, kingSquare)
 			if move == nil {
 				possiblePinnedPiece = &fromSquare
-				break
+				continue
 			}
 
 			// Add move
 			pieceAbsVal := notation.Piece(math.Abs(float64(move.Piece)))
+			// TODO fix
 			if move.IsCapture && (pieceAbsVal == notation.Piece_WhiteBishop || pieceAbsVal == notation.Piece_WhiteQueen) {
 				if possiblePinnedPiece != nil {
 					pinnedSquares = append(pinnedSquares, *possiblePinnedPiece)
@@ -92,9 +124,9 @@ func FindReverseKingMoves(p *notation.Position) (notation.MoveList, []notation.S
 	return checkMoves, pinnedSquares
 }
 
-// ==================== Sudo-Legal Moves ====================
+// ==================== Pseudo-Legal Moves ====================
 
-func GenerateSudoLegalMoves(p *notation.Position) notation.MoveList {
+func GeneratePseudoLegalMoves(p *notation.Position) notation.MoveList {
 	moves := notation.MoveList{}
 
 	for i, pieceVal := range p.PieceList {
@@ -158,7 +190,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 		}
 
 		// Check type of move
-		move := GenerateNormalMove(p, fromSquare, toSquare)
+		move := GenerateMove(p, fromSquare, toSquare)
 		if move == nil {
 			break
 		}
@@ -169,7 +201,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 			_, r := move.To.FileRank()
 			if (r == 8 && move.Piece == notation.Piece_WhitePawn) ||
 				(r == 1 && move.Piece == notation.Piece_BlackPawn) {
-				GeneratePromotionMoves(p, move)
+				moves = append(moves, GeneratePromotionMoves(p, move)...)
 			} else {
 				moves = append(moves, move)
 			}
@@ -185,7 +217,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 		}
 
 		// Check type of move
-		move := GenerateNormalMove(p, fromSquare, toSquare)
+		move := GenerateMove(p, fromSquare, toSquare)
 		if move == nil {
 			continue
 		}
@@ -228,12 +260,45 @@ func GeneratePromotionMoves(p *notation.Position, move *notation.Move) notation.
 	return moves
 }
 
-func GenerateKnightMoves(p *notation.Position, fromSquare notation.Square) notation.MoveList {
-	return GenerateNoSlideMoves(p, fromSquare, KnightMovementPairs)
+func GenerateKingMoves(p *notation.Position, kingSquare notation.Square) notation.MoveList {
+	moves := GenerateNoSlideMoves(p, kingSquare, KingMovementPairs)
+
+	if !(p.WhitesTurn && kingSquare == notation.Square_e1) && !(!p.WhitesTurn && kingSquare == notation.Square_e8) {
+		// King has moved off starting square
+		return moves
+	}
+	if !p.CanCastle(p.WhitesTurn, true) && !p.CanCastle(p.WhitesTurn, false) {
+		// Can't castle either way
+		return moves
+	}
+
+	// Castling moves
+	f, r := kingSquare.FileRank()
+	for _, pair := range []MovementPair{{2, 0}, {-2, 0}} {
+		// Is valid square
+		toSquare, err := notation.NewSquare(r+notation.Rank(pair.RP), f+notation.File(pair.FP))
+		if err != nil {
+			break
+		}
+
+		// Create move
+		move := GenerateMove(p, kingSquare, toSquare)
+		if move == nil {
+			break
+		}
+
+		// Add move
+		moves = append(moves, move)
+		if move.IsCapture {
+			break
+		}
+	}
+
+	return moves
 }
 
-func GenerateKingMoves(p *notation.Position, fromSquare notation.Square) notation.MoveList {
-	return GenerateNoSlideMoves(p, fromSquare, KingMovementPairs)
+func GenerateKnightMoves(p *notation.Position, fromSquare notation.Square) notation.MoveList {
+	return GenerateNoSlideMoves(p, fromSquare, KnightMovementPairs)
 }
 
 func GenerateBishopMoves(p *notation.Position, fromSquare notation.Square) notation.MoveList {
@@ -251,11 +316,12 @@ func GenerateQueenMoves(p *notation.Position, fromSquare notation.Square) notati
 // ========================= Movement Moves ====================
 
 var (
-	KnightMovementPairs = []MovementPair{{1, 2}, {2, 1}, {1, -2}, {2, -1}, {-1, 2}, {-2, 1}, {-1, -2}, {-2, -1}}
-	BishopMovementPairs = []MovementPair{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
-	RookMovementPairs   = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
-	QueenMovementPairs  = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
-	KingMovementPairs   = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
+	KnightMovementPairs   = []MovementPair{{1, 2}, {2, 1}, {1, -2}, {2, -1}, {-1, 2}, {-2, 1}, {-1, -2}, {-2, -1}}
+	BishopMovementPairs   = []MovementPair{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
+	RookMovementPairs     = []MovementPair{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+	QueenMovementPairs    = append(BishopMovementPairs, RookMovementPairs...)
+	KingMovementPairs     = QueenMovementPairs
+	KingCastlingMovements = []MovementPair{{2, 0}, {-2, 0}}
 )
 
 type MovementPair struct{ RP, FP int }
@@ -271,18 +337,18 @@ func GenerateSlideMoves(p *notation.Position, fromSquare notation.Square, pairs 
 func GenerateMovementMoves(p *notation.Position, fromSquare notation.Square, pairs []MovementPair, slideCount int) notation.MoveList {
 	moves := notation.MoveList{}
 
-	// Check movements
+	// Movements
 	f, r := fromSquare.FileRank()
 	for _, pair := range pairs {
 		for i := 1; i <= slideCount; i++ {
-			// Check square is valid
+			// Is valid square
 			toSquare, err := notation.NewSquare(r+notation.Rank(pair.RP*i), f+notation.File(pair.FP*i))
 			if err != nil {
 				break
 			}
 
-			// Check type of move
-			move := GenerateNormalMove(p, fromSquare, toSquare)
+			// Create move
+			move := GenerateMove(p, fromSquare, toSquare)
 			if move == nil {
 				break
 			}
@@ -300,48 +366,35 @@ func GenerateMovementMoves(p *notation.Position, fromSquare notation.Square, pai
 
 // ==================== Basic Generate Move ====================
 
-func GenerateNormalMove(p *notation.Position, fromSquare, toSquare notation.Square) (move *notation.Move) {
-	return GenerateMove(p, fromSquare, toSquare, false)
-}
-
-func GenerateReverseMove(p *notation.Position, toSquare, fromSquare notation.Square) (move *notation.Move) {
-	return GenerateMove(p, toSquare, fromSquare, true)
-}
-
-func GenerateMove(p *notation.Position, square, newSquare notation.Square, reverse bool) (move *notation.Move) {
-	// Check if square is same color piece
-	pieceIsSameColor := p.PieceAtIsSame(newSquare)
+func GenerateMove(p *notation.Position, fromSquare, toSquare notation.Square) *notation.Move {
+	pieceIsSameColor := p.PieceAtIsSame(toSquare)
 	if pieceIsSameColor {
+		// Same color piece
 		return nil
-	} else {
-		var fromSquare, toSquare notation.Square
-		if reverse {
-			fromSquare = newSquare
-			toSquare = square
-		} else {
-			fromSquare = square
-			toSquare = newSquare
-		}
-		fromPiece := p.PieceAt(fromSquare)
-
-		// Create basic move
-		move = &notation.Move{
-			PieceList: p.PieceList,
-			From:      fromSquare,
-			To:        toSquare,
-			Piece:     fromPiece,
-		}
-
-		// Check if square is empty or opposite color piece
-		if !pieceIsSameColor { // Opposite color piece
-			move.IsCapture = true
-			return move
-		} else { // Empty Square
-			if fromPiece.IsPawn() && toSquare == p.EnPassantSquare {
-				move.IsCapture = true
-				return move
-			}
-			return move
-		}
 	}
+
+	fromPiece := p.PieceAt(fromSquare)
+
+	// Create move
+	move := &notation.Move{
+		PieceList: p.PieceList,
+		From:      fromSquare,
+		To:        toSquare,
+		Piece:     fromPiece,
+	}
+
+	if !pieceIsSameColor {
+		// Opposite color piece
+		move.IsCapture = true
+		return move
+	}
+	// Empty Square
+
+	// Check for EnPassant
+	if fromPiece.IsPawn() && toSquare == p.EnPassantSquare {
+		move.IsCapture = true
+		return move
+	}
+
+	return move
 }

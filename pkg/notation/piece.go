@@ -18,6 +18,44 @@ var PromotionPieces = []Piece{
 	Piece_WhiteKnight,
 }
 
+type Piece2 uint8
+
+const (
+	Piece2_None Piece2 = 0
+
+	Piece2_Pawn   Piece2 = 1
+	Piece2_Knight Piece2 = 1 << 1
+	Piece2_Bishop Piece2 = 1 << 2
+	Piece2_Rook   Piece2 = 1 << 3
+	Piece2_Queen  Piece2 = 1 << 4
+	Piece2_King   Piece2 = 1 << 5
+
+	Piece2_White Piece2 = 1 << 6
+	Piece2_Black Piece2 = 1 << 7
+
+	Piece2_WhitePawn   Piece2 = Piece2_White | Piece2_Pawn
+	Piece2_WhiteKnight Piece2 = Piece2_White | Piece2_Knight
+	Piece2_WhiteBishop Piece2 = Piece2_White | Piece2_Bishop
+	Piece2_WhiteRook   Piece2 = Piece2_White | Piece2_Rook
+	Piece2_WhiteQueen  Piece2 = Piece2_White | Piece2_Queen
+	Piece2_WhiteKing   Piece2 = Piece2_White | Piece2_King
+
+	Piece2_BlackPawn   Piece2 = Piece2_Black | Piece2_Pawn
+	Piece2_BlackKnight Piece2 = Piece2_Black | Piece2_Knight
+	Piece2_BlackBishop Piece2 = Piece2_Black | Piece2_Bishop
+	Piece2_BlackRook   Piece2 = Piece2_Black | Piece2_Rook
+	Piece2_BlackQueen  Piece2 = Piece2_Black | Piece2_Queen
+	Piece2_BlackKing   Piece2 = Piece2_Black | Piece2_King
+)
+
+func (p Piece2) IsWhite() bool {
+	return (p & Piece2_White) == Piece2_White
+}
+
+func (p Piece2) IsBlack() bool {
+	return (p & Piece2_Black) == Piece2_Black
+}
+
 type Piece int8
 
 const (

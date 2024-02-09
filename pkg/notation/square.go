@@ -6,113 +6,88 @@ import (
 	"strconv"
 )
 
-// ==================== Rank ====================
+func SquaresInBetween(fromSquare, toSquare Square) []Square {
+	squaresInBetween := make([]Square, 0, 6)
 
-type Rank int8
-
-const (
-	Rank1 Rank = iota
-	Rank2
-	Rank3
-	Rank4
-	Rank5
-	Rank6
-	Rank7
-	Rank8
-)
-
-func NewRankFromString(str string) (Rank, error) {
-	if !rankRegExp.MatchString(str) {
-		return Rank(-1), fmt.Errorf("invalid rank format")
+	// Same Square
+	if fromSquare == toSquare {
+		return squaresInBetween
 	}
-	r, err := strconv.Atoi(str)
-	if err != nil {
-		return Rank(-1), err
+
+	fromF, fromR := fromSquare.FileRank()
+	toF, toR := toSquare.FileRank()
+
+	// On the same file
+	if fromF == toF {
+		lowerR, higherR := fromR, toR
+		if fromR > toR {
+			lowerR, higherR = toR, fromR
+		}
+		for rp := lowerR + 1; rp < higherR; rp++ {
+			s, err := NewSquare(rp, fromF)
+			if err != nil {
+				continue
+			}
+			squaresInBetween = append(squaresInBetween, s)
+		}
+		return squaresInBetween
 	}
-	return Rank(r - 1), nil
-}
 
-func (r Rank) String() string {
-	if r < 0 || r >= 8 {
-		return "_"
+	// On the same rank
+	if fromR == toR {
+		lowerF, higherF := fromF, toF
+		if fromF > toF {
+			lowerF, higherF = toF, fromF
+		}
+		for fp := lowerF + 1; fp < higherF; fp++ {
+			s, err := NewSquare(fromR, fp)
+			if err != nil {
+				continue
+			}
+			squaresInBetween = append(squaresInBetween, s)
+		}
+		return squaresInBetween
 	}
-	return strconv.Itoa(int(r) + 1)
-}
 
-// ==================== File ====================
-
-type File int
-type FileStr string
-
-const (
-	FileA File = iota
-	FileB
-	FileC
-	FileD
-	FileE
-	FileF
-	FileG
-	FileH
-)
-
-const (
-	FileStrA FileStr = "a"
-	FileStrB FileStr = "b"
-	FileStrC FileStr = "c"
-	FileStrD FileStr = "d"
-	FileStrE FileStr = "e"
-	FileStrF FileStr = "f"
-	FileStrG FileStr = "g"
-	FileStrH FileStr = "h"
-)
-
-func NewFileFromString(str string) (File, error) {
-	if !fileRegExp.MatchString(str) {
-		return File(-1), fmt.Errorf("invalid file format")
+	// On the positive diagonal
+	if int(fromR-toR) == int(fromF-toF) {
+		lowerR, _ := fromR, toR
+		lowerF, higherF := fromF, toF
+		if fromF > toF {
+			lowerR, _ = toR, fromR
+			lowerF, higherF = toF, fromF
+		}
+		for p := 1; p < int(higherF-lowerF); p++ {
+			s, err := NewSquare(lowerR+Rank(p), lowerF+File(p))
+			if err != nil {
+				continue
+			}
+			squaresInBetween = append(squaresInBetween, s)
+		}
+		return squaresInBetween
 	}
-	switch FileStr(str) {
-	case FileStrA:
-		return FileA, nil
-	case FileStrB:
-		return FileB, nil
-	case FileStrC:
-		return FileC, nil
-	case FileStrD:
-		return FileD, nil
-	case FileStrE:
-		return FileE, nil
-	case FileStrF:
-		return FileF, nil
-	case FileStrG:
-		return FileG, nil
-	case FileStrH:
-		return FileH, nil
-	default:
-		return File(-1), fmt.Errorf("invalid file")
-	}
-}
 
-func (f File) String() string {
-	switch f {
-	case FileA:
-		return string(FileStrA)
-	case FileB:
-		return string(FileStrB)
-	case FileC:
-		return string(FileStrC)
-	case FileD:
-		return string(FileStrD)
-	case FileE:
-		return string(FileStrE)
-	case FileF:
-		return string(FileStrF)
-	case FileG:
-		return string(FileStrG)
-	case FileH:
-		return string(FileStrH)
-	default:
-		return "_"
+	// On the negative diagonal
+	if int(fromR-toR) == -int(fromF-toF) {
+		lowerR, _ := fromR, toR
+		lowerF, higherF := fromF, toF
+		if fromF > toF {
+			lowerR, _ = toR, fromR
+			lowerF, higherF = toF, fromF
+		}
+		for p := 1; p < int(higherF-lowerF); p++ {
+			s, err := NewSquare(lowerR-Rank(p), lowerF+File(p))
+			if err != nil {
+				continue
+			}
+			squaresInBetween = append(squaresInBetween, s)
+		}
+		return squaresInBetween
 	}
+
+	// No valid in between squares
+
+	return squaresInBetween
 }
 
 // ==================== Square ====================
@@ -231,4 +206,113 @@ func (s Square) String() string {
 
 func (s Square) FileRank() (File, Rank) {
 	return File(int(s) % 8), Rank(int(s) / 8)
+}
+
+// ==================== Rank ====================
+
+type Rank int8
+
+const (
+	Rank1 Rank = iota
+	Rank2
+	Rank3
+	Rank4
+	Rank5
+	Rank6
+	Rank7
+	Rank8
+)
+
+func NewRankFromString(str string) (Rank, error) {
+	if !rankRegExp.MatchString(str) {
+		return Rank(-1), fmt.Errorf("invalid rank format")
+	}
+	r, err := strconv.Atoi(str)
+	if err != nil {
+		return Rank(-1), err
+	}
+	return Rank(r - 1), nil
+}
+
+func (r Rank) String() string {
+	if r < 0 || r >= 8 {
+		return "_"
+	}
+	return strconv.Itoa(int(r) + 1)
+}
+
+// ==================== File ====================
+
+type File int
+type FileStr string
+
+const (
+	FileA File = iota
+	FileB
+	FileC
+	FileD
+	FileE
+	FileF
+	FileG
+	FileH
+)
+
+const (
+	FileStrA FileStr = "a"
+	FileStrB FileStr = "b"
+	FileStrC FileStr = "c"
+	FileStrD FileStr = "d"
+	FileStrE FileStr = "e"
+	FileStrF FileStr = "f"
+	FileStrG FileStr = "g"
+	FileStrH FileStr = "h"
+)
+
+func NewFileFromString(str string) (File, error) {
+	if !fileRegExp.MatchString(str) {
+		return File(-1), fmt.Errorf("invalid file format")
+	}
+	switch FileStr(str) {
+	case FileStrA:
+		return FileA, nil
+	case FileStrB:
+		return FileB, nil
+	case FileStrC:
+		return FileC, nil
+	case FileStrD:
+		return FileD, nil
+	case FileStrE:
+		return FileE, nil
+	case FileStrF:
+		return FileF, nil
+	case FileStrG:
+		return FileG, nil
+	case FileStrH:
+		return FileH, nil
+	default:
+		return File(-1), fmt.Errorf("invalid file")
+	}
+}
+
+func (f File) String() string {
+	switch f {
+	case FileA:
+		return string(FileStrA)
+	case FileB:
+		return string(FileStrB)
+	case FileC:
+		return string(FileStrC)
+	case FileD:
+		return string(FileStrD)
+	case FileE:
+		return string(FileStrE)
+	case FileF:
+		return string(FileStrF)
+	case FileG:
+		return string(FileStrG)
+	case FileH:
+		return string(FileStrH)
+	default:
+		return "_"
+	}
 }

@@ -13,14 +13,14 @@ func TestGenerateSudoLegalMoves(t *testing.T) {
 	fmt.Printf("FEN: %s\n", notation.StartingFEN)
 	startingPosition, err := notation.NewPosition(notation.StartingFEN)
 	require.NoError(t, err)
-	moves := generation.GenerateSudoLegalMoves(startingPosition)
+	moves := generation.GeneratePseudoLegalMoves(startingPosition)
 	fmt.Printf("Moves: %s\n", moves)
 
 	oneMoveFen := notation.FEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
 	fmt.Printf("FEN: %s\n", oneMoveFen)
 	oneMovePosition, err := notation.NewPosition(oneMoveFen)
 	require.NoError(t, err)
-	moves = generation.GenerateSudoLegalMoves(oneMovePosition)
+	moves = generation.GeneratePseudoLegalMoves(oneMovePosition)
 	fmt.Printf("Moves: %s\n", moves)
 }
 
@@ -29,7 +29,7 @@ func BenchmarkGenerateSudoLegalMoves(b *testing.B) {
 	require.NoError(b, err)
 	b.Run("GenerateSudoLegalMoves", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			_ = generation.GenerateSudoLegalMoves(startingBoard)
+			_ = generation.GeneratePseudoLegalMoves(startingBoard)
 		}
 	})
 	b.Run("GenerateNoSlideMoves", func(b *testing.B) {
@@ -39,7 +39,7 @@ func BenchmarkGenerateSudoLegalMoves(b *testing.B) {
 	})
 	b.Run("GenerateMove", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			_ = generation.GenerateNormalMove(startingBoard, notation.Square_a2, notation.Square_a3)
+			_ = generation.GenerateMove(startingBoard, notation.Square_a2, notation.Square_a3)
 		}
 	})
 }
