@@ -19,7 +19,7 @@ func NewPosition(fenStr FEN) (*Position, error) {
 type Position struct {
 	PieceList  PieceList
 	WhitesTurn bool
-	castling   struct {
+	Castling   struct {
 		whiteShort bool
 		whiteLong  bool
 		blackShort bool
@@ -57,22 +57,22 @@ func (p Position) PieceAtIsSame(s Square) bool {
 // ==================== Castling Functions ====================
 
 func (p Position) CanWhiteCastle() bool {
-	return p.castling.whiteLong || p.castling.whiteShort
+	return p.Castling.whiteLong || p.Castling.whiteShort
 }
 
 func (p Position) CanBlackCastle() bool {
-	return p.castling.blackLong || p.castling.blackShort
+	return p.Castling.blackLong || p.Castling.blackShort
 }
 
 func (p Position) CanCastle(isWhite, isShort bool) bool {
 	if isWhite && isShort {
-		return p.castling.whiteShort
+		return p.Castling.whiteShort
 	} else if isWhite && !isShort {
-		return p.castling.whiteLong
+		return p.Castling.whiteLong
 	} else if !isWhite && isShort {
-		return p.castling.blackShort
+		return p.Castling.blackShort
 	} else if !isWhite && !isShort {
-		return p.castling.blackLong
+		return p.Castling.blackLong
 	}
 	return false
 }
@@ -112,10 +112,10 @@ func (p *Position) parseFEN(fenStr FEN) error {
 	p.WhitesTurn = (submatches[2] == "w")
 
 	// Parse Castling
-	p.castling.whiteShort = strings.Contains(submatches[3], "K")
-	p.castling.whiteLong = strings.Contains(submatches[3], "Q")
-	p.castling.blackShort = strings.Contains(submatches[3], "k")
-	p.castling.blackLong = strings.Contains(submatches[3], "q")
+	p.Castling.whiteShort = strings.Contains(submatches[3], "K")
+	p.Castling.whiteLong = strings.Contains(submatches[3], "Q")
+	p.Castling.blackShort = strings.Contains(submatches[3], "k")
+	p.Castling.blackLong = strings.Contains(submatches[3], "q")
 
 	// Parse En Passant Square
 	var err error
@@ -180,16 +180,16 @@ func (p Position) FEN() FEN {
 
 	// Print Castling
 	castlingStr := ""
-	if p.castling.whiteShort {
+	if p.Castling.whiteShort {
 		castlingStr += "K"
 	}
-	if p.castling.whiteLong {
+	if p.Castling.whiteLong {
 		castlingStr += "Q"
 	}
-	if p.castling.blackShort {
+	if p.Castling.blackShort {
 		castlingStr += "k"
 	}
-	if p.castling.blackLong {
+	if p.Castling.blackLong {
 		castlingStr += "q"
 	}
 	if castlingStr == "" {
@@ -211,4 +211,36 @@ func (p Position) FEN() FEN {
 	return FEN(fmt.Sprintf("%s %s %s %s %s %s",
 		piecePlacementStr, sideToMoveStr, castlingStr,
 		enPassantTargetSquareStr, halfmoveCountStr, fullmoveCountStr))
+}
+
+// ==================== Ascii ====================
+
+func (p Position) AsciiString() string {
+	var asciiString string
+
+	// Top of board
+	asciiString += "\n +---+---+---+---+---+---+---+---+\n"
+
+	// Each Rank
+	for rank := Rank8; rank >= Rank1; rank-- {
+		// Each File
+		for file := FileA; file <= FileH; file++ {
+			// Each Piece
+			square, err := NewSquare(rank, file)
+			if err != nil {
+				fmt.Println("just no")
+			}
+			asciiString += " | " + p.PieceAt(square).String()
+		}
+		asciiString += " | " + rank.String() + "\n"
+		asciiString += " +---+---+---+---+---+---+---+---+\n"
+	}
+
+	// Bottom of board
+	asciiString += "   a   b   c   d   e   f   g   h \n\n"
+
+	// Extras
+	asciiString += "FEN: " + string(p.FEN()) + ""
+
+	return asciiString
 }

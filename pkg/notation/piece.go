@@ -81,7 +81,7 @@ func (v Piece) IsPawn() bool {
 func (v Piece) String() string {
 	c, err := v.Char()
 	if err != nil {
-		return ""
+		return " "
 	}
 	return fmt.Sprint(c)
 }

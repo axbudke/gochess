@@ -1,8 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"gochess/pkg/game"
+)
 
 func main() {
-	fmt.Println("Hello chess")
-	return
+	game.GameLoop()
 }

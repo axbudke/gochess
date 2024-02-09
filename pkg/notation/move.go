@@ -8,14 +8,6 @@ import (
 
 type MoveList []*Move
 
-func (m MoveList) String() string {
-	str := ""
-	for _, move := range m {
-		str += fmt.Sprintf("Move: %s ", *move)
-	}
-	return str
-}
-
 func (m MoveList) FindMovesFrom(fromSquare Square) MoveList {
 	moves := make(MoveList, 0, len(m))
 	for _, move := range m {
