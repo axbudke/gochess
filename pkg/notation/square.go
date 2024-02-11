@@ -2,7 +2,6 @@ package notation
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 )
 
@@ -24,11 +23,7 @@ func SquaresInBetween(fromSquare, toSquare Square) []Square {
 			lowerR, higherR = toR, fromR
 		}
 		for rp := lowerR + 1; rp < higherR; rp++ {
-			s, err := NewSquare(rp, fromF)
-			if err != nil {
-				continue
-			}
-			squaresInBetween = append(squaresInBetween, s)
+			squaresInBetween = append(squaresInBetween, NewSquare(fromF, rp))
 		}
 		return squaresInBetween
 	}
@@ -40,11 +35,7 @@ func SquaresInBetween(fromSquare, toSquare Square) []Square {
 			lowerF, higherF = toF, fromF
 		}
 		for fp := lowerF + 1; fp < higherF; fp++ {
-			s, err := NewSquare(fromR, fp)
-			if err != nil {
-				continue
-			}
-			squaresInBetween = append(squaresInBetween, s)
+			squaresInBetween = append(squaresInBetween, NewSquare(fp, fromR))
 		}
 		return squaresInBetween
 	}
@@ -58,11 +49,7 @@ func SquaresInBetween(fromSquare, toSquare Square) []Square {
 			lowerF, higherF = toF, fromF
 		}
 		for p := 1; p < int(higherF-lowerF); p++ {
-			s, err := NewSquare(lowerR+Rank(p), lowerF+File(p))
-			if err != nil {
-				continue
-			}
-			squaresInBetween = append(squaresInBetween, s)
+			squaresInBetween = append(squaresInBetween, NewSquare(lowerF+File(p), lowerR-Rank(p)))
 		}
 		return squaresInBetween
 	}
@@ -76,11 +63,7 @@ func SquaresInBetween(fromSquare, toSquare Square) []Square {
 			lowerF, higherF = toF, fromF
 		}
 		for p := 1; p < int(higherF-lowerF); p++ {
-			s, err := NewSquare(lowerR-Rank(p), lowerF+File(p))
-			if err != nil {
-				continue
-			}
-			squaresInBetween = append(squaresInBetween, s)
+			squaresInBetween = append(squaresInBetween, NewSquare(lowerF+File(p), lowerR-Rank(p)))
 		}
 		return squaresInBetween
 	}
@@ -159,44 +142,21 @@ const (
 	Square_f8
 	Square_g8
 	Square_h8
+
+	Square_Invalid
 )
 
-func NewSquare(r Rank, f File) (Square, error) {
-	if r < 0 || r >= 8 {
-		return -1, fmt.Errorf("invalid rank")
-	} else if f < 0 || f >= 8 {
-		return -1, fmt.Errorf("invalid file")
-	}
-	return Square(int(r)*8 + int(f)), nil
+func NewSquare(f File, r Rank) Square {
+	return Square(int(r)<<3 + int(f))
 }
 
-// Square is a simple notation for a square on a chess board
-// <square>        ::= <file letter><rank number>
-// <file letter>   ::= 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'
-// <rank number>   ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'
-var (
-	fileRegExpStr   = "[a-h]"
-	fileRegExp      = regexp.MustCompile(fileRegExpStr)
-	rankRegExpStr   = "[1-8]"
-	rankRegExp      = regexp.MustCompile(rankRegExpStr)
-	squareRegExpStr = fmt.Sprintf("(%s)(%s)", fileRegExpStr, rankRegExpStr)
-	squareRegExp    = regexp.MustCompile(squareRegExpStr)
-)
-
-func NewSquareFromString(str string) (Square, error) {
-	submatches := squareRegExp.FindStringSubmatch(str)
-	if submatches == nil {
-		return Square(-1), fmt.Errorf("invalid square format")
+func NewSquareCheck(f File, r Rank) (Square, error) {
+	if f < 0 || f >= 8 {
+		return -1, fmt.Errorf("invalid file")
+	} else if r < 0 || r >= 8 {
+		return -1, fmt.Errorf("invalid rank")
 	}
-	f, err := NewFileFromString(submatches[1])
-	if err != nil {
-		return Square(-1), err
-	}
-	r, err := NewRankFromString(submatches[2])
-	if err != nil {
-		return Square(-1), err
-	}
-	return NewSquare(r, f)
+	return NewSquare(f, r), nil
 }
 
 func (s Square) String() string {
@@ -205,7 +165,28 @@ func (s Square) String() string {
 }
 
 func (s Square) FileRank() (File, Rank) {
-	return File(int(s) % 8), Rank(int(s) / 8)
+	return File(int(s) & 7), Rank(int(s) >> 3)
+}
+
+// Square is a simple notation for a square on a chess board
+// <square>        ::= <file letter><rank number>
+// <file letter>   ::= 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'
+// <rank number>   ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'
+
+func NewSquareFromString(str string) (Square, error) {
+	bs := []byte(str)
+	if len(bs) != 2 {
+		return Square_Invalid, fmt.Errorf("invalid square")
+	}
+	f, err := NewFileFromString(string(bs[0]))
+	if err != nil {
+		return Square_Invalid, err
+	}
+	r, err := NewRankFromString(string(bs[1]))
+	if err != nil {
+		return Square_Invalid, err
+	}
+	return NewSquare(f, r), nil
 }
 
 // ==================== Rank ====================
@@ -221,17 +202,20 @@ const (
 	Rank6
 	Rank7
 	Rank8
+
+	RankInvalid
 )
 
 func NewRankFromString(str string) (Rank, error) {
-	if !rankRegExp.MatchString(str) {
-		return Rank(-1), fmt.Errorf("invalid rank format")
-	}
-	r, err := strconv.Atoi(str)
+	i, err := strconv.Atoi(str)
 	if err != nil {
-		return Rank(-1), err
+		return RankInvalid, err
 	}
-	return Rank(r - 1), nil
+	r := i - 1
+	if r < 0 || r >= 8 {
+		return RankInvalid, fmt.Errorf("invalid rank: out of range")
+	}
+	return Rank(r), nil
 }
 
 func (r Rank) String() string {
@@ -244,7 +228,6 @@ func (r Rank) String() string {
 // ==================== File ====================
 
 type File int
-type FileStr string
 
 const (
 	FileA File = iota
@@ -255,7 +238,11 @@ const (
 	FileF
 	FileG
 	FileH
+
+	FileInvalid
 )
+
+type FileStr string
 
 const (
 	FileStrA FileStr = "a"
@@ -266,12 +253,11 @@ const (
 	FileStrF FileStr = "f"
 	FileStrG FileStr = "g"
 	FileStrH FileStr = "h"
+
+	FileStrInvalid FileStr = "_"
 )
 
 func NewFileFromString(str string) (File, error) {
-	if !fileRegExp.MatchString(str) {
-		return File(-1), fmt.Errorf("invalid file format")
-	}
 	switch FileStr(str) {
 	case FileStrA:
 		return FileA, nil
@@ -290,7 +276,7 @@ func NewFileFromString(str string) (File, error) {
 	case FileStrH:
 		return FileH, nil
 	default:
-		return File(-1), fmt.Errorf("invalid file")
+		return FileInvalid, fmt.Errorf("invalid file")
 	}
 }
 
@@ -313,6 +299,6 @@ func (f File) String() string {
 	case FileH:
 		return string(FileStrH)
 	default:
-		return "_"
+		return string(FileStrInvalid)
 	}
 }

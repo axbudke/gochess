@@ -9,6 +9,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func BenchmarkSquare(b *testing.B) {
+	b.Run("NewSquare", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			for f := notation.FileA; f <= notation.FileH; f++ {
+				for r := notation.Rank1; r <= notation.Rank8; r++ {
+					_ = notation.NewSquare(f, r)
+				}
+			}
+		}
+	})
+
+	b.Run("NewSquareCheck", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			for f := notation.FileA; f <= notation.FileH; f++ {
+				for r := notation.Rank1; r <= notation.Rank8; r++ {
+					_, _ = notation.NewSquareCheck(f, r)
+				}
+			}
+		}
+	})
+}
+
 func TestSquaresInBetween(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -50,21 +72,23 @@ func TestSquaresInBetween(t *testing.T) {
 	}
 }
 
-func TestNewSquare(t *testing.T) {
-	a1, err := notation.NewSquare(0, 0)
+func TestNewSquareCheck(t *testing.T) {
+	a1, err := notation.NewSquareCheck(0, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, "a1", a1.String())
-	h8, err := notation.NewSquare(7, 7)
+	h8, err := notation.NewSquareCheck(7, 7)
 	assert.NoError(t, err)
 	assert.Equal(t, "h8", h8.String())
-	_, err = notation.NewSquare(-1, 0)
-	assert.ErrorContains(t, err, "invalid rank")
-	_, err = notation.NewSquare(8, 0)
-	assert.ErrorContains(t, err, "invalid rank")
-	_, err = notation.NewSquare(0, -1)
+
+	// Failures
+	_, err = notation.NewSquareCheck(-1, 0)
 	assert.ErrorContains(t, err, "invalid file")
-	_, err = notation.NewSquare(0, 8)
+	_, err = notation.NewSquareCheck(8, 0)
 	assert.ErrorContains(t, err, "invalid file")
+	_, err = notation.NewSquareCheck(0, -1)
+	assert.ErrorContains(t, err, "invalid rank")
+	_, err = notation.NewSquareCheck(0, 8)
+	assert.ErrorContains(t, err, "invalid rank")
 }
 
 func TestNewSquareFromString(t *testing.T) {
@@ -74,12 +98,18 @@ func TestNewSquareFromString(t *testing.T) {
 	f3, err := notation.NewSquareFromString("f3")
 	require.NoError(t, err)
 	assert.Equal(t, f3, notation.Square_f3)
+
+	// Failures
 	_, err = notation.NewSquareFromString("k9")
-	assert.ErrorContains(t, err, "invalid square format")
+	assert.ErrorContains(t, err, "invalid file")
+	_, err = notation.NewSquareFromString("a9")
+	assert.ErrorContains(t, err, "invalid rank")
+	_, err = notation.NewSquareFromString("k92")
+	assert.ErrorContains(t, err, "invalid square")
 }
 
 func TestSquareString(t *testing.T) {
-	assert.Equal(t, notation.Square_a1.String(), "a1")
-	assert.Equal(t, notation.Square_a2.String(), "a2")
-	assert.Equal(t, notation.Square_h8.String(), "h8")
+	assert.Equal(t, "a1", notation.Square_a1.String())
+	assert.Equal(t, "a2", notation.Square_a2.String())
+	assert.Equal(t, "h8", notation.Square_h8.String())
 }

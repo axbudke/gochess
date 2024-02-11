@@ -71,7 +71,7 @@ func GenerateChecksAndPins(p *notation.Position, kingSquare notation.Square) (no
 	// Find Knight/Pawn checks
 	for _, pair := range append(KnightMovementPairs, []MovementPair{{1 * inverter, 1}, {1 * inverter, -1}}...) {
 		// Check square is valid
-		fromSquare, err := notation.NewSquare(r+notation.Rank(pair.RP), f+notation.File(pair.FP))
+		fromSquare, err := notation.NewSquareCheck(f+notation.File(pair.FP), r+notation.Rank(pair.RP))
 		if err != nil {
 			continue
 		}
@@ -93,7 +93,7 @@ func GenerateChecksAndPins(p *notation.Position, kingSquare notation.Square) (no
 		var possiblePinnedPiece *notation.Square
 		for i := 1; i <= 7; i++ {
 			// Check square is valid
-			fromSquare, err := notation.NewSquare(r+notation.Rank(pair.RP*i), f+notation.File(pair.FP*i))
+			fromSquare, err := notation.NewSquareCheck(f+notation.File(pair.FP*i), r+notation.Rank(pair.RP*i))
 			if err != nil {
 				break
 			}
@@ -184,7 +184,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 	}
 	for _, rp := range forwardMovements {
 		// Check square is valid
-		toSquare, err := notation.NewSquare(r+notation.Rank(rp*inverter), f)
+		toSquare, err := notation.NewSquareCheck(f, r+notation.Rank(rp*inverter))
 		if err != nil {
 			break
 		}
@@ -211,7 +211,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 	// Check pawn captures
 	for _, fp := range []int{1, -1} {
 		// Check square is valid
-		toSquare, err := notation.NewSquare(r+notation.Rank(1*inverter), f+notation.File(fp*inverter))
+		toSquare, err := notation.NewSquareCheck(f+notation.File(fp*inverter), r+notation.Rank(1*inverter))
 		if err != nil {
 			continue
 		}
@@ -276,7 +276,7 @@ func GenerateKingMoves(p *notation.Position, kingSquare notation.Square) notatio
 	f, r := kingSquare.FileRank()
 	for _, pair := range []MovementPair{{2, 0}, {-2, 0}} {
 		// Is valid square
-		toSquare, err := notation.NewSquare(r+notation.Rank(pair.RP), f+notation.File(pair.FP))
+		toSquare, err := notation.NewSquareCheck(f+notation.File(pair.FP), r+notation.Rank(pair.RP))
 		if err != nil {
 			break
 		}
@@ -342,7 +342,7 @@ func GenerateMovementMoves(p *notation.Position, fromSquare notation.Square, pai
 	for _, pair := range pairs {
 		for i := 1; i <= slideCount; i++ {
 			// Is valid square
-			toSquare, err := notation.NewSquare(r+notation.Rank(pair.RP*i), f+notation.File(pair.FP*i))
+			toSquare, err := notation.NewSquareCheck(f+notation.File(pair.FP*i), r+notation.Rank(pair.RP*i))
 			if err != nil {
 				break
 			}

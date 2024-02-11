@@ -222,17 +222,13 @@ func (p Position) AsciiString() string {
 	asciiString += "\n +---+---+---+---+---+---+---+---+\n"
 
 	// Each Rank
-	for rank := Rank8; rank >= Rank1; rank-- {
+	for r := Rank8; r >= Rank1; r-- {
 		// Each File
-		for file := FileA; file <= FileH; file++ {
+		for f := FileA; f <= FileH; f++ {
 			// Each Piece
-			square, err := NewSquare(rank, file)
-			if err != nil {
-				fmt.Println("just no")
-			}
-			asciiString += " | " + p.PieceAt(square).String()
+			asciiString += " | " + p.PieceAt(NewSquare(f, r)).String()
 		}
-		asciiString += " | " + rank.String() + "\n"
+		asciiString += " | " + r.String() + "\n"
 		asciiString += " +---+---+---+---+---+---+---+---+\n"
 	}
 
