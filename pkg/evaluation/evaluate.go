@@ -35,7 +35,7 @@ func GetMaterialCount(b *notation.Position) int {
 			total += 9
 		case notation.Piece_WhiteKing:
 			total += 200
-		case notation.Piece_Empty:
+		case notation.Piece_None:
 		default:
 		}
 	}

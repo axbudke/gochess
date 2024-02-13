@@ -40,20 +40,6 @@ func (p Position) PieceAt(s Square) Piece {
 	return p.PieceList.PieceAt(s)
 }
 
-func (p Position) PieceAtIsSame(s Square) bool {
-	// inverter used to determine same/opposite color
-	inverter := func() int {
-		if p.WhitesTurn {
-			return 1
-		} else {
-			return -1
-		}
-	}()
-
-	piece := p.PieceList.PieceAt(s)
-	return piece*Piece(inverter) > 0
-}
-
 // ==================== Castling Functions ====================
 
 func (p Position) CanWhiteCastle() bool {
@@ -120,7 +106,7 @@ func (p *Position) parseFEN(fenStr FEN) error {
 	// Parse En Passant Square
 	var err error
 	if submatches[4] == "-" {
-		p.EnPassantSquare = Square(-1)
+		p.EnPassantSquare = Square_Invalid
 	} else {
 		p.EnPassantSquare, err = NewSquareFromString(submatches[4])
 		if err != nil {
@@ -151,7 +137,7 @@ func (p Position) FEN() FEN {
 		pieceRow := ""
 		for f := 0; f < 8; f++ {
 			piece := p.PieceList[r*8+f]
-			if piece == Piece_Empty {
+			if piece == Piece_None {
 				emptyCount++
 				continue
 			}
@@ -198,7 +184,7 @@ func (p Position) FEN() FEN {
 
 	// Print En Passant Square
 	enPassantTargetSquareStr := "-"
-	if p.EnPassantSquare != Square(-1) {
+	if p.EnPassantSquare != Square_Invalid {
 		enPassantTargetSquareStr = p.EnPassantSquare.String()
 	}
 

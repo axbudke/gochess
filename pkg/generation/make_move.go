@@ -8,8 +8,8 @@ func MakeMove(p *notation.Position, move notation.Move) *notation.Position {
 	// Update PieceList
 	newP.PieceList = make(notation.PieceList, len(p.PieceList))
 	copy(newP.PieceList, p.PieceList)
-	newP.PieceList[int(move.From)] = notation.Piece_Empty
-	if move.PromotedTo == notation.Piece_Empty {
+	newP.PieceList[int(move.From)] = notation.Piece_None
+	if move.PromotedTo == notation.Piece_None {
 		newP.PieceList[int(move.To)] = move.Piece
 	} else {
 		newP.PieceList[int(move.To)] = move.PromotedTo
@@ -22,6 +22,7 @@ func MakeMove(p *notation.Position, move notation.Move) *notation.Position {
 	newP.Castling = p.Castling
 
 	// Update EnPassantSquare
+	newP.EnPassantSquare = notation.Square_Invalid
 
 	// Update FullmoveCount
 	newP.HalfmoveCount = p.HalfmoveCount

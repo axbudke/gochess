@@ -1,12 +1,32 @@
 package notation
 
 import (
+	"cmp"
 	"fmt"
+	"slices"
 )
 
 // ==================== Move List ====================
 
 type MoveList []*Move
+
+func (m MoveList) Sort() {
+	slices.SortFunc(m, func(a, b *Move) int {
+		var pieceCmp int
+		if a.Piece.IsWhite() {
+			pieceCmp = cmp.Compare(a.Piece, b.Piece)
+		} else {
+			pieceCmp = cmp.Compare(b.Piece, a.Piece)
+		}
+		if pieceCmp != 0 {
+			return pieceCmp
+		}
+		if fromCmp := cmp.Compare(a.From.String(), b.From.String()); fromCmp != 0 {
+			return fromCmp
+		}
+		return cmp.Compare(a.To.String(), b.To.String())
+	})
+}
 
 func (m MoveList) FindMovesFrom(fromSquare Square) MoveList {
 	moves := make(MoveList, 0, len(m))
@@ -41,12 +61,14 @@ func (m MoveList) FindMovesNotFrom(fromSquare Square) MoveList {
 // ==================== Move ====================
 
 type Move struct {
-	From       Square
-	To         Square
-	Piece      Piece
-	IsCapture  bool
-	PromotedTo Piece
-	PieceList  PieceList
+	From         Square
+	To           Square
+	Piece        Piece
+	PromotedTo   Piece
+	IsCapture    bool
+	IsDoublePush bool
+	IsCastling   bool
+	PieceList    PieceList
 }
 
 func (m Move) String() string {
@@ -66,7 +88,11 @@ func NewMoveFromPCN(pcn PCN) (Move, error) {
 }
 
 func (m Move) PCN() PCN {
-	return PCN(fmt.Sprintf("%s%s%s", m.From, m.To, m.PromotedTo))
+	promotedToStr := ""
+	if m.PromotedTo != Piece_None {
+		promotedToStr = m.PromotedTo.Symbol()
+	}
+	return PCN(fmt.Sprintf("%s%s%s", m.From, m.To, promotedToStr))
 }
 
 // LAN - Long Algebraic Notation
@@ -84,11 +110,14 @@ func (m Move) LAN() LAN {
 	if m.IsCapture {
 		capStr = "x"
 	}
-
-	if m.Piece != Piece_WhitePawn {
+	if !m.Piece.IsPawn() {
 		return LAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), m.From, capStr, m.To))
 	} else {
-		return LAN(fmt.Sprintf("%s%s%s%s", m.From, capStr, m.To, m.PromotedTo))
+		promotedToStr := ""
+		if m.PromotedTo != Piece_None {
+			promotedToStr = m.PromotedTo.Symbol()
+		}
+		return LAN(fmt.Sprintf("%s%s%s%s", m.From, capStr, m.To, promotedToStr))
 	}
 }
 
@@ -103,7 +132,7 @@ func NewMoveFromSAN(san SAN) (Move, error) {
 }
 
 func (m Move) SAN() SAN {
-	if m.Piece != Piece_WhitePawn {
+	if !m.Piece.IsPawn() {
 		capStr := ""
 		if m.IsCapture {
 			capStr = "x"
@@ -112,11 +141,15 @@ func (m Move) SAN() SAN {
 		// TODO solve ambiguities
 		return SAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), fromStr, capStr, m.To))
 	} else {
+		promotedToStr := ""
+		if m.PromotedTo != Piece_None {
+			promotedToStr = m.PromotedTo.Symbol()
+		}
 		if m.IsCapture {
 			fromF, fromR := m.From.FileRank()
 			// TODO solve ambiguities
-			return SAN(fmt.Sprintf("%s%sx%s%s", fromF, fromR, m.To, m.PromotedTo))
+			return SAN(fmt.Sprintf("%s%sx%s%s", fromF, fromR, m.To, promotedToStr))
 		}
-		return SAN(fmt.Sprintf("%s%s", m.To, m.PromotedTo))
+		return SAN(fmt.Sprintf("%s%s", m.To, promotedToStr))
 	}
 }

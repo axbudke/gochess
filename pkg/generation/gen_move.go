@@ -5,7 +5,11 @@ import (
 	"math"
 )
 
-func GenerateMoves(p *notation.Position) notation.MoveList {
+func GenerateMoves(p *notation.Position) (moveList notation.MoveList) {
+	defer func() {
+		moveList.Sort()
+	}()
+
 	// Find King
 	inverter := 1
 	if !p.WhitesTurn {
@@ -179,7 +183,7 @@ func GeneratePawnMoves(p *notation.Position, fromSquare notation.Square) notatio
 
 	// Check pawn movements
 	forwardMovements := []int{1}
-	if r == notation.Rank2 {
+	if (p.WhitesTurn && r == notation.Rank2) || (!p.WhitesTurn && r == notation.Rank7) {
 		forwardMovements = append(forwardMovements, 2)
 	}
 	for _, rp := range forwardMovements {
@@ -367,8 +371,17 @@ func GenerateMovementMoves(p *notation.Position, fromSquare notation.Square, pai
 // ==================== Basic Generate Move ====================
 
 func GenerateMove(p *notation.Position, fromSquare, toSquare notation.Square) *notation.Move {
-	pieceIsSameColor := p.PieceAtIsSame(toSquare)
-	if pieceIsSameColor {
+	// inverter used to determine same/opposite color
+	inverter := func() int {
+		if p.WhitesTurn {
+			return 1
+		} else {
+			return -1
+		}
+	}()
+
+	piece := p.PieceList.PieceAt(toSquare)
+	if piece*notation.Piece(inverter) > 0 {
 		// Same color piece
 		return nil
 	}
@@ -383,7 +396,7 @@ func GenerateMove(p *notation.Position, fromSquare, toSquare notation.Square) *n
 		Piece:     fromPiece,
 	}
 
-	if !pieceIsSameColor {
+	if piece*notation.Piece(inverter) < 0 {
 		// Opposite color piece
 		move.IsCapture = true
 		return move

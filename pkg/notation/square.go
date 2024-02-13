@@ -78,6 +78,8 @@ func SquaresInBetween(fromSquare, toSquare Square) []Square {
 type Square int
 
 const (
+	Square_Invalid Square = -1
+
 	Square_a1 Square = iota
 	Square_b1
 	Square_c1
@@ -142,8 +144,6 @@ const (
 	Square_f8
 	Square_g8
 	Square_h8
-
-	Square_Invalid
 )
 
 func NewSquare(f File, r Rank) Square {
