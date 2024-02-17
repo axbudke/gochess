@@ -1,8 +1,13 @@
-package notation
+package position
 
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
+
+	"gochess/pkg/notation/piece"
+	"gochess/pkg/notation/square"
 )
 
 // FEN describes a chess position in a one line ascii string.
@@ -92,3 +97,139 @@ var (
 const (
 	StartingFEN FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
+
+// ==================== Position Functions ====================
+
+func (p *Position) parseFEN(fenStr FEN) error {
+	// Parse FEN with regexp
+	submatches := FenRegExp.FindStringSubmatch(string(fenStr))
+	if submatches == nil {
+		return fmt.Errorf("failed to parse regexp")
+	}
+
+	// Parse PieceList from fenPiecePlacementStr
+	p.PieceList = make([]piece.Piece, 64)
+	index := 0
+	pieceRows := strings.Split(submatches[1], "/")
+	for i := len(pieceRows) - 1; i >= 0; i-- {
+		for _, c := range []byte(pieceRows[i]) {
+			if regexp.MustCompile("[1-8]").Match([]byte{c}) {
+				val, _ := strconv.Atoi(string(c))
+				index += val
+			} else if regexp.MustCompile("[pnbrqkPNBRQK]").Match([]byte{c}) {
+				v, err := piece.PieceChar(c).Val()
+				if err != nil {
+					return err
+				}
+				p.PieceList[index] = v
+				index++
+			} else {
+				return fmt.Errorf("invalid piece syntax")
+			}
+		}
+	}
+
+	// Parse Side to Move
+	p.WhitesTurn = (submatches[2] == "w")
+
+	// Parse Castling
+	p.Castling.whiteShort = strings.Contains(submatches[3], "K")
+	p.Castling.whiteLong = strings.Contains(submatches[3], "Q")
+	p.Castling.blackShort = strings.Contains(submatches[3], "k")
+	p.Castling.blackLong = strings.Contains(submatches[3], "q")
+
+	// Parse En Passant Square
+	var err error
+	if submatches[4] == "-" {
+		p.EnPassantSquare = square.Square_Invalid
+	} else {
+		p.EnPassantSquare, err = square.NewSquareFromString(submatches[4])
+		if err != nil {
+			return fmt.Errorf("failed to parse square: %w", err)
+		}
+	}
+
+	// Parse Halfmove Count
+	p.HalfmoveCount, err = strconv.Atoi(submatches[5])
+	if err != nil {
+		return fmt.Errorf("failed to parse halfmove count: %w", err)
+	}
+
+	// Parse Fullmove Count
+	p.FullmoveCount, err = strconv.Atoi(submatches[6])
+	if err != nil {
+		return fmt.Errorf("failed to parse fullmove count: %w", err)
+	}
+
+	return nil
+}
+
+func (p Position) FEN() FEN {
+	// Print Piece Placement
+	pieceRows := []string{}
+	emptyCount := 0
+	for r := 0; r < 8; r++ {
+		pieceRow := ""
+		for f := 0; f < 8; f++ {
+			p := p.PieceList[r*8+f]
+			if p == piece.Piece_None {
+				emptyCount++
+				continue
+			}
+			if emptyCount != 0 {
+				pieceRow += fmt.Sprint(emptyCount)
+				emptyCount = 0
+			}
+			pieceRow += fmt.Sprint(p.String())
+		}
+		if emptyCount != 0 {
+			pieceRow += fmt.Sprint(emptyCount)
+			emptyCount = 0
+		}
+		pieceRows = append(pieceRows, pieceRow)
+	}
+	piecePlacementStr := pieceRows[len(pieceRows)-1]
+	for i := len(pieceRows) - 2; i >= 0; i-- {
+		piecePlacementStr += "/" + pieceRows[i]
+	}
+
+	// Print Side to Move
+	sideToMoveStr := "b"
+	if p.WhitesTurn {
+		sideToMoveStr = "w"
+	}
+
+	// Print Castling
+	castlingStr := ""
+	if p.Castling.whiteShort {
+		castlingStr += "K"
+	}
+	if p.Castling.whiteLong {
+		castlingStr += "Q"
+	}
+	if p.Castling.blackShort {
+		castlingStr += "k"
+	}
+	if p.Castling.blackLong {
+		castlingStr += "q"
+	}
+	if castlingStr == "" {
+		castlingStr = "-"
+	}
+
+	// Print En Passant Square
+	enPassantTargetSquareStr := "-"
+	if p.EnPassantSquare != square.Square_Invalid {
+		enPassantTargetSquareStr = p.EnPassantSquare.String()
+	}
+
+	// Parse Halfmove Count
+	halfmoveCountStr := strconv.Itoa(p.HalfmoveCount)
+
+	// Parse Fullmove Count
+	fullmoveCountStr := strconv.Itoa(p.FullmoveCount)
+
+	return FEN(fmt.Sprintf("%s %s %s %s %s %s",
+		piecePlacementStr, sideToMoveStr, castlingStr,
+		enPassantTargetSquareStr, halfmoveCountStr, fullmoveCountStr))
+}

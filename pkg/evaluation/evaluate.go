@@ -1,41 +1,41 @@
 package evaluation
 
 import (
-	"gochess/pkg/notation"
+	"gochess/pkg/notation/piece"
+	"gochess/pkg/notation/position"
 )
 
-func Evaluate(b *notation.Position) int {
+func Evaluate(p *position.Position) int {
 	var total int
-	total += GetMaterialCount(b)
+	total += GetMaterialCount(p)
 	return total
 }
 
-func GetMaterialCount(b *notation.Position) int {
+func GetMaterialCount(p *position.Position) int {
 	var total int
-	pieceList := notation.PieceList{}
-	for _, piece := range pieceList {
-		switch piece {
-		case notation.Piece_BlackPawn:
+	for _, pc := range p.PieceList {
+		switch pc {
+		case piece.Piece_BlackPawn:
 			total += -1
-		case notation.Piece_BlackBishop, notation.Piece_BlackKnight:
+		case piece.Piece_BlackBishop, piece.Piece_BlackKnight:
 			total += -3
-		case notation.Piece_BlackRook:
+		case piece.Piece_BlackRook:
 			total += -5
-		case notation.Piece_BlackQueen:
+		case piece.Piece_BlackQueen:
 			total += -9
-		case notation.Piece_BlackKing:
+		case piece.Piece_BlackKing:
 			total += -200
-		case notation.Piece_WhitePawn:
+		case piece.Piece_WhitePawn:
 			total += 1
-		case notation.Piece_WhiteBishop, notation.Piece_WhiteKnight:
+		case piece.Piece_WhiteBishop, piece.Piece_WhiteKnight:
 			total += 3
-		case notation.Piece_WhiteRook:
+		case piece.Piece_WhiteRook:
 			total += 5
-		case notation.Piece_WhiteQueen:
+		case piece.Piece_WhiteQueen:
 			total += 9
-		case notation.Piece_WhiteKing:
+		case piece.Piece_WhiteKing:
 			total += 200
-		case notation.Piece_None:
+		case piece.Piece_None:
 		default:
 		}
 	}

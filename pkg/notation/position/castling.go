@@ -1,4 +1,4 @@
-package notation
+package position
 
 type Castling uint8
 

@@ -1,4 +1,4 @@
-package notation
+package square
 
 import (
 	"fmt"

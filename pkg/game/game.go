@@ -3,13 +3,13 @@ package game
 import (
 	"fmt"
 	"gochess/pkg/generation"
-	"gochess/pkg/notation"
+	"gochess/pkg/notation/position"
 
 	"github.com/manifoldco/promptui"
 )
 
 func GameLoop() {
-	boardPosition, err := notation.NewPosition(notation.StartingFEN)
+	boardPosition, err := position.NewPosition(position.StartingFEN)
 	if err != nil {
 		fmt.Println("invalid starting position")
 		return

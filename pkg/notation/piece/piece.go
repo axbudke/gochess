@@ -1,4 +1,4 @@
-package notation
+package piece
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ var PromotionPieces = []Piece{
 	Piece_WhiteKnight,
 }
 
-// ==================== Piece List ====================
+// // ==================== Piece List ====================
 
-type PieceList []Piece
+// type PieceList []Piece
 
-func (l PieceList) PieceAt(s Square) Piece {
-	return l[int(s)]
-}
+// func (l PieceList) PieceAt(s Square) Piece {
+// 	return l[int(s)]
+// }
 
 // ==================== Piece ====================
 

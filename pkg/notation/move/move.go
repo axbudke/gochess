@@ -1,9 +1,12 @@
-package notation
+package move
 
 import (
 	"cmp"
 	"fmt"
 	"slices"
+
+	"gochess/pkg/notation/piece"
+	"gochess/pkg/notation/square"
 )
 
 // ==================== Move List ====================
@@ -28,7 +31,7 @@ func (m MoveList) Sort() {
 	})
 }
 
-func (m MoveList) FindMovesFrom(fromSquare Square) MoveList {
+func (m MoveList) FindMovesFrom(fromSquare square.Square) MoveList {
 	moves := make(MoveList, 0, len(m))
 	for _, move := range m {
 		if move.From == fromSquare {
@@ -38,7 +41,7 @@ func (m MoveList) FindMovesFrom(fromSquare Square) MoveList {
 	return moves
 }
 
-func (m MoveList) FindMovesTo(toSquare Square) MoveList {
+func (m MoveList) FindMovesTo(toSquare square.Square) MoveList {
 	moves := make(MoveList, 0, len(m))
 	for _, move := range m {
 		if move.To == toSquare {
@@ -48,7 +51,7 @@ func (m MoveList) FindMovesTo(toSquare Square) MoveList {
 	return moves
 }
 
-func (m MoveList) FindMovesNotFrom(fromSquare Square) MoveList {
+func (m MoveList) FindMovesNotFrom(fromSquare square.Square) MoveList {
 	moves := make(MoveList, 0, len(m))
 	for _, move := range m {
 		if move.From != fromSquare {
@@ -61,14 +64,14 @@ func (m MoveList) FindMovesNotFrom(fromSquare Square) MoveList {
 // ==================== Move ====================
 
 type Move struct {
-	From         Square
-	To           Square
-	Piece        Piece
-	PromotedTo   Piece
+	From         square.Square
+	To           square.Square
+	Piece        piece.Piece
+	PromotedTo   piece.Piece
 	IsCapture    bool
 	IsDoublePush bool
 	IsCastling   bool
-	PieceList    PieceList
+	PieceList    []piece.Piece
 }
 
 func (m Move) String() string {
@@ -89,7 +92,7 @@ func NewMoveFromPCN(pcn PCN) (Move, error) {
 
 func (m Move) PCN() PCN {
 	promotedToStr := ""
-	if m.PromotedTo != Piece_None {
+	if m.PromotedTo != piece.Piece_None {
 		promotedToStr = m.PromotedTo.Symbol()
 	}
 	return PCN(fmt.Sprintf("%s%s%s", m.From, m.To, promotedToStr))
@@ -114,7 +117,7 @@ func (m Move) LAN() LAN {
 		return LAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), m.From, capStr, m.To))
 	} else {
 		promotedToStr := ""
-		if m.PromotedTo != Piece_None {
+		if m.PromotedTo != piece.Piece_None {
 			promotedToStr = m.PromotedTo.Symbol()
 		}
 		return LAN(fmt.Sprintf("%s%s%s%s", m.From, capStr, m.To, promotedToStr))
@@ -142,7 +145,7 @@ func (m Move) SAN() SAN {
 		return SAN(fmt.Sprintf("%s%s%s%s", m.Piece.Symbol(), fromStr, capStr, m.To))
 	} else {
 		promotedToStr := ""
-		if m.PromotedTo != Piece_None {
+		if m.PromotedTo != piece.Piece_None {
 			promotedToStr = m.PromotedTo.Symbol()
 		}
 		if m.IsCapture {

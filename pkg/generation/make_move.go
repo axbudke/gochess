@@ -1,18 +1,23 @@
 package generation
 
-import "gochess/pkg/notation"
+import (
+	"gochess/pkg/notation/move"
+	"gochess/pkg/notation/piece"
+	"gochess/pkg/notation/position"
+	"gochess/pkg/notation/square"
+)
 
-func MakeMove(p *notation.Position, move notation.Move) *notation.Position {
-	newP := &notation.Position{}
+func MakeMove(p *position.Position, m move.Move) *position.Position {
+	newP := &position.Position{}
 
 	// Update PieceList
-	newP.PieceList = make(notation.PieceList, len(p.PieceList))
+	newP.PieceList = make([]piece.Piece, len(p.PieceList))
 	copy(newP.PieceList, p.PieceList)
-	newP.PieceList[int(move.From)] = notation.Piece_None
-	if move.PromotedTo == notation.Piece_None {
-		newP.PieceList[int(move.To)] = move.Piece
+	newP.PieceList[int(m.From)] = piece.Piece_None
+	if m.PromotedTo == piece.Piece_None {
+		newP.PieceList[int(m.To)] = m.Piece
 	} else {
-		newP.PieceList[int(move.To)] = move.PromotedTo
+		newP.PieceList[int(m.To)] = m.PromotedTo
 	}
 
 	// Update SideToMove
@@ -22,11 +27,11 @@ func MakeMove(p *notation.Position, move notation.Move) *notation.Position {
 	newP.Castling = p.Castling
 
 	// Update EnPassantSquare
-	newP.EnPassantSquare = notation.Square_Invalid
+	newP.EnPassantSquare = square.Square_Invalid
 
 	// Update FullmoveCount
 	newP.HalfmoveCount = p.HalfmoveCount
-	if move.IsCapture || move.Piece == notation.Piece_WhitePawn {
+	if m.IsCapture || m.Piece == piece.Piece_WhitePawn {
 		newP.HalfmoveCount = 0
 	} else {
 		newP.HalfmoveCount++
